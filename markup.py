@@ -43,6 +43,7 @@ inline_keyboard_schedule_settings = InlineKeyboardMarkup(row_width=2).add(
 )
 
 """ Finance buttons """
+
 inline_button_add_finance_category = InlineKeyboardButton('➕Add category➕', callback_data='➕Add category➕')
 inline_button_add_expense = InlineKeyboardButton('💸Add expense💸', callback_data='💸Add expense💸')
 inline_button_add_incomes = InlineKeyboardButton('💰Add incomes💰', callback_data='💰Add incomes💰')
@@ -53,11 +54,21 @@ inline_keyboard_finance_menu = InlineKeyboardMarkup(row_width=2).add(
     inline_button_finance_statistic
 )
 
+inline_button_statistic_today = InlineKeyboardButton('Today', callback_data='Last week statistic')
 inline_button_statistic_by_week = InlineKeyboardButton('Last week', callback_data='Last week statistic')
 inline_button_statistic_by_month = InlineKeyboardButton('Last month', callback_data='Last month statistic')
 inline_button_statistic_by_year = InlineKeyboardButton('Last year', callback_data='Last year statistic')
 
 inline_keyboard_statistic_menu = InlineKeyboardMarkup(row_width=2).add(
-    inline_button_statistic_by_week, inline_button_statistic_by_month, inline_button_statistic_by_year
+    inline_button_statistic_today, inline_button_statistic_by_week,
+    inline_button_statistic_by_month, inline_button_statistic_by_year
 )
-cb = CallbackData("night_action", "user_id", "button_for", "id_game")
+
+
+
+
+
+
+
+
+
