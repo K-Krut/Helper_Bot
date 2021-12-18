@@ -9,21 +9,19 @@ inline_button_schedule = InlineKeyboardButton('📅Schedule📅', callback_data=
 inline_button_finance = InlineKeyboardButton('💰Finance💰', callback_data='💰Finance💰')
 inline_button_help = InlineKeyboardButton('ℹ️Helpℹ️', callback_data='ℹ️Helpℹ️')
 inline_button_back = InlineKeyboardButton('🔙', callback_data='🔙')
-inline_keyboard_menu = InlineKeyboardMarkup(row_width=2).add(inline_button_schedule,
-                                                             inline_button_notes,
-                                                             inline_button_library,
-                                                             inline_button_finance,
-                                                             inline_button_help)
+inline_keyboard_menu = InlineKeyboardMarkup(row_width=2).add(
+    inline_button_schedule, inline_button_notes, inline_button_library,
+    inline_button_finance, inline_button_help
+)
 
 inline_button_check_notes = InlineKeyboardButton("🔎Search note🔎", callback_data="🔎Search note🔎")
 inline_button_add_note = InlineKeyboardButton('➕Add note➕', callback_data='➕Add note➕')
 inline_button_delete_note = InlineKeyboardButton("🔥Delete note🔥", callback_data="🔥Delete note🔥")
 inline_button_edit_note = InlineKeyboardButton("🖋️Edit note🖋️", callback_data="🖋️Edit note🖋️")
-inline_keyboard_note_menu = InlineKeyboardMarkup(row_width=2).add(inline_button_check_notes,
-                                                                  inline_button_add_note,
-                                                                  inline_button_edit_note,
-                                                                  inline_button_delete_note,
-                                                                  inline_button_back)
+inline_keyboard_note_menu = InlineKeyboardMarkup(row_width=2).add(
+    inline_button_check_notes, inline_button_add_note, inline_button_edit_note,
+    inline_button_delete_note, inline_button_back
+)
 
 inline_button_schedule_settings = InlineKeyboardButton("🔧Settings🔧", callback_data="🔧Settings🔧")
 inline_button_schedule_current_day = InlineKeyboardButton("⌚Today schedule⌚", callback_data="⌚Today schedule⌚")
