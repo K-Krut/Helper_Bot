@@ -6,7 +6,7 @@ USE finance;
 CREATE TABLE budget(
 	code_name varchar(50) PRIMARY KEY,
     daily_limit integer,
-    mounth_limit integer
+    month_limit integer
 );
     
 CREATE TABLE category(
