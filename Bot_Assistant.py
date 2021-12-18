@@ -1,14 +1,6 @@
-import config
-import logging
-from aiogram import Bot, Dispatcher, executor, types
-import markup
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
- 
-logging.basicConfig(level=logging.INFO)
-bot = Bot(token=config.TOKEN)
-dp = Dispatcher(bot, storage=MemoryStorage())
- 
- 
+from imports import *
+
+
 @dp.message_handler(commands=['start'])
 async def send_welcome_message(message: types.Message):
     await bot.send_message(message.from_user.id,
@@ -33,9 +25,7 @@ async def add_note(call: types.CallbackQuery):
     async def add_theme(message: types.Message):
         await bot.send_message(message.from_user.id, f"*{message.text}*", parse_mode="Markdown")
  
- 
- 
- 
+
 @dp.callback_query_handler(text="📅Schedule📅")
 async def schedule_menu(call: types.CallbackQuery):
     await call.message.delete()
@@ -58,7 +48,21 @@ async def back(call: types.CallbackQuery):
                            f"👤*Hi! {call.from_user.first_name if call.from_user.first_name else ''} "
                            f"{call.from_user.last_name if call.from_user.last_name else ''}\n I'm "
                            f"bot Student Assistant.*", parse_mode="Markdown", reply_markup=markup.inline_keyboard_menu)
- 
- 
+
+
+@dp.callback_query_handler(text='💰Finance💰')
+async def note_menu(call: types.CallbackQuery):
+    await call.message.delete()
+    await bot.send_message(call.from_user.id, "*Choose action to perform*", parse_mode="Markdown",
+                           reply_markup=markup.inline_keyboard_finance_menu)
+
+
+@dp.callback_query_handler(text='📈Statistic📈')
+async def note_menu(call: types.CallbackQuery):
+    await call.message.delete()
+    await bot.send_message(call.from_user.id, "*Choose action to perform*", parse_mode="Markdown",
+                           reply_markup=markup.inline_keyboard_statistic_menu)
+
+
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
