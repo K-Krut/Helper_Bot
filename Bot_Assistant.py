@@ -50,6 +50,9 @@ async def back(call: types.CallbackQuery):
                            f"bot Student Assistant.*", parse_mode="Markdown", reply_markup=markup.inline_keyboard_menu)
 
 
+""" Finance handlers  """
+
+
 @dp.callback_query_handler(text='💰Finance💰')
 async def note_menu(call: types.CallbackQuery):
     await call.message.delete()
@@ -62,6 +65,20 @@ async def note_menu(call: types.CallbackQuery):
     await call.message.delete()
     await bot.send_message(call.from_user.id, "*Choose action to perform*", parse_mode="Markdown",
                            reply_markup=markup.inline_keyboard_statistic_menu)
+
+
+@dp.callback_query_handler(text='➕Add category➕')
+async def add_category(call: types.CallbackQuery):
+    await call.message.delete()
+    await bot.send_message(
+        call.from_user.id, "*Enter category and key words like this:\n"
+                           "products: products, food, продукты, еда, їжа, продукти*",
+        parse_mode="Markdown"
+    )
+
+    # @dp.message_handler(text='➕Add category➕')
+    # async def add_category_(message: types.Message):
+    #     await bot.send_message(message.from_user.id, f'*{message.text}*', parse_mode="Markdown")
 
 
 if __name__ == '__main__':
