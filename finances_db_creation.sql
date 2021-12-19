@@ -20,8 +20,7 @@ CREATE TABLE expenses(
     amount integer,
     date_time datetime, 
     category varchar(100),
-    message_text_ text, 
-    CHECK (amount > -1),
+    message_text_ text,
     FOREIGN KEY (category) REFERENCES category(code_name)
 );
 
@@ -31,7 +30,6 @@ CREATE TABLE incomes(
     date_time datetime,
     category varchar(100),
     message_text_ text,
-    CHECK (amount > -1),
     FOREIGN KEY (category) REFERENCES category(code_name)
 );
 
