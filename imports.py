@@ -1,8 +1,13 @@
 import config
 import logging
-from aiogram import Bot, Dispatcher, executor, types
 import markup
+from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+
+import datetime
+import re
+from typing import List, NamedTuple, Optional
+
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=config.TOKEN)
