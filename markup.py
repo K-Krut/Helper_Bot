@@ -47,12 +47,13 @@ inline_keyboard_schedule_settings = InlineKeyboardMarkup(row_width=2).add(
 inline_button_add_finance_category = InlineKeyboardButton('➕Add category➕', callback_data='➕Add category➕')
 inline_button_add_expense = InlineKeyboardButton('💸Add expense💸', callback_data='💸Add expense💸')
 inline_button_add_incomes = InlineKeyboardButton('💰Add incomes💰', callback_data='💰Add incomes💰')
+inline_button_budget = InlineKeyboardButton('🏛️Budget🏛️', callback_data='🏛️Budget🏛️')
 inline_button_finance_statistic = InlineKeyboardButton('📈Statistic📈', callback_data='📈Statistic📈')
 inline_button_back_to_finance = InlineKeyboardButton('🔙', callback_data='BACK_TO_FINANCE')
 
 inline_keyboard_finance_menu = InlineKeyboardMarkup(row_width=2).add(
-    inline_button_add_finance_category, inline_button_add_expense, inline_button_add_incomes,
-    inline_button_finance_statistic, inline_button_back
+    inline_button_add_incomes, inline_button_add_expense, inline_button_finance_statistic,
+    inline_button_add_finance_category, inline_button_budget, inline_button_back
 )
 
 inline_button_statistic_today = InlineKeyboardButton('Today', callback_data='Last week statistic')
@@ -66,11 +67,12 @@ inline_keyboard_statistic_menu = InlineKeyboardMarkup(row_width=2).add(
     inline_button_back_to_finance
 )
 
+inline_button_edit_budget = InlineKeyboardButton('🖊️Edit budget🖊️', callback_data='🖊️Edit budget🖊️')
 
 
-
-
-
+inline_keyboard_budget_menu = InlineKeyboardMarkup(row_width=2).add(
+    inline_button_edit_budget, inline_button_back_to_finance
+)
 
 
 
