@@ -16,7 +16,7 @@ class AddExpenseError(Exception):
         super().__init__(self._error_message)
 
     def __str__(self):
-        return f'{self._error_message}:\n{self._category} does not much the format: `125 taxi`'
+        return f'{self._error_message}:\n{self._expense} does not much the format: `125 taxi`'
 
 
 class AddIncomeError(Exception):
@@ -26,4 +26,17 @@ class AddIncomeError(Exception):
         super().__init__(self._error_message)
 
     def __str__(self):
-        return f'{self._error_message}:\n{self._category} does not much the format: `125 job`'
+        return f'{self._error_message}:\n{self._income} does not much the format: `125 job`'
+
+
+class ChangeBudgetError(Exception):
+    def __init__(self, budget, error_message='Incorrect budget input'):
+        self._budget = budget
+        self._error_message = error_message
+        super().__init__(self._error_message)
+
+    def __str__(self):
+        return f'{self._error_message}:\n{self._budget} does not much the format:\n' \
+               f'`daily 150 month 8500`\n' \
+               f'daily 360\n' \
+               f'month 4520'

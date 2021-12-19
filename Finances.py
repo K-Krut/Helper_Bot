@@ -65,6 +65,11 @@ class Message(NamedTuple):
     category_text: str
 
 
+class BudgetMessage(NamedTuple):
+    daily_amount: int
+    month_amount: int
+
+
 class IncomeExpense(NamedTuple):
     id: Optional[int]
     amount: int
@@ -79,41 +84,82 @@ def _parse_category(message):
     return CategoryMessage(name_=reg_str[0], category_text=reg_str[1])
 
 
-def _parse_message(raw_message):
-    regexp = re.match(r"([\d ]+) (.*)", raw_message)
+def _parse_message(message):
+    regexp = re.match(r"([\d ]+) (.*)", message)
     print(f'PARSE {regexp} -> {regexp.group(0)} -> {regexp.group(1)} -> {regexp.group(2)}')
     if not regexp or not regexp.group(0) \
             or not regexp.group(1) or not regexp.group(2):
-        raise AddCategoryError('_parse_message for expense/income')
+        raise AddCategoryError(str(message))
+    ###################################################################################################################
     # amount = regexp_result.group(1).replace(" ", "")
     # category_text = regexp_result.group(2).strip().lower()
-    return Message(
-        amount=int(regexp.group(1).replace(" ", "")), category_text=regexp.group(2).strip().lower()
-    )
+    return Message(amount=int(regexp.group(1).replace(" ", "")), category_text=regexp.group(2).strip().lower())
+
+
+def _parse_budget_message(message):
+    # regexp_ = re.match(r'daily ([1-9]([0-9]){0,10}) month ([1-9]([0-9]){0,10})', message)
+    regexp_ = re.match(r'(daily) ([1-9]([0-9]){0,10}) (month) ([1-9]([0-9]){0,10})',
+                       str(message).lower().replace("  ", " "))
+    print(f'{regexp_.group(1)}, {regexp_.group(2)}, {regexp_.group(4)}, {regexp_.group(5)}')
+    # if not (regexp_.group(1) and regexp_.group(2)) or (regexp_.group(4) and regexp_.group(5)):
+    if not regexp_.group(0):
+        raise ChangeBudgetError('SOENENE=ENENE')
+    print(str(message))
+    return BudgetMessage(daily_amount=int(regexp_.group(2)), month_amount=int(regexp_.group(5)))
 
 
 def add_expense(message):
     parsed_message = _parse_message(message)
     category = Categories().get_category(
         parsed_message.category_text)
-    db.insert("expenses", {
-        "amount": parsed_message.amount,
-        "date_time": _get_now_formatted(),
-        "category": category.codename
-    })
-    # return IncomeExpense(id=None, amount=parsed_message.amount, category_name=category.name)
+    db.insert(
+        "expenses",
+        {
+            "amount": parsed_message.amount,
+            "date_time": _get_now_formatted(),
+            "category": category.codename
+        }
+    )
+    return IncomeExpense(id=None, amount=parsed_message.amount, category_name=category.name)
 
 
-def add_income(message):
+def edit_budget(message):
+    parsed_message = _parse_budget_message(message)
+    db.update_(
+        "budget", {
+            'daily_limit': parsed_message.daily_amount,
+            'month_limit': parsed_message.month_amount
+        },
+        "code_name = 'general'"
+    )
+
+
+def add_incomes(message):
     parsed_message = _parse_message(message)
     category = Categories().get_category(
         parsed_message.category_text)
-    db.insert("incomes", {
-        "amount": parsed_message.amount,
-        "date_time": _get_now_formatted(),
-        "category": category.codename
-    })
-    # return IncomeExpense(id=None, amount=parsed_message.amount, category_name=category.name)
+    db.insert(
+        "incomes",
+        {
+            "amount": parsed_message.amount,
+            "date_time": _get_now_formatted(),
+            "category": category.codename
+        }
+    )
+    return IncomeExpense(id=None, amount=parsed_message.amount, category_name=category.name)
+
+
+def create_category_finance(message):
+    print(message)
+    parsed_data = _parse_category(message)
+    db.insert(
+        "category", {
+            'code_name': parsed_data.name_ + '_',
+            'category_name': parsed_data.name_,
+            'aliases_': parsed_data.category_text
+        }
+    )
+    return CreateCategory(code_name_=parsed_data[0] + '_', category_name_=parsed_data[0], aliases_text_=parsed_data[1])
 
 
 def delete_expense(row_id):
@@ -131,26 +177,15 @@ def _get_now_datetime():
 
 
 def get_budget_month_limit():
-    print(db.fetchall_('budget', 'month_limit')[0]['month_limit'])
-    return db.fetchall_('budget', 'month_limit')[0]['month_limit']
+    print(db.fetchall_('budget', ['month_limit'])[0]['month_limit'])
+    return db.fetchall_('budget', ['month_limit'])[0]['month_limit']
 
 
 def get_budget_daily_limit():
-    print(db.fetchall_('budget', 'daily_limit')[0]['daily_limit'])
-    return db.fetchall_('budget', 'daily_limit')[0]['daily_limit']
+    print(db.fetchall_('budget', ['daily_limit'])[0]['daily_limit'])
+    return db.fetchall_('budget', ['daily_limit'])[0]['daily_limit']
 
 
-def create_category_finance(message):
-    print(message)
-    parsed_data = _parse_category(message)
-    db.insert(
-        "category", {
-            'code_name': parsed_data.name_ + '_',
-            'category_name': parsed_data.name_,
-            'aliases_': parsed_data.category_text
-        }
-    )
-    return CreateCategory(code_name_=parsed_data[0] + '_', category_name_=parsed_data[0],
-                          aliases_text_=parsed_data[1])
+
 
 

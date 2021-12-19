@@ -41,5 +41,11 @@ def delete(table, row, value):
         cursor.execute(f"DELETE FROM {table} WHERE {row}='{value}'")
         connection.commit()
 
-# delete('category', 'code_name', 'other_')
-# delete('category', 'code_name', 'dinner_')
+
+def update_(table, data, condition):
+    columns = ', '.join([f'{i} = %s' for i in data])
+    values = [[i] for i in data.values()]
+    print(f'UPDATE {table} SET {columns} WHERE {condition}')
+    with connection.cursor() as cursor:
+        cursor.execute(f'UPDATE {table} SET {columns} WHERE {condition}', values)
+        connection.commit()

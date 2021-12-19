@@ -49,10 +49,12 @@ async def schedule_settings(call: types.CallbackQuery):
 @dp.callback_query_handler(text="🔙")
 async def back(call: types.CallbackQuery):
     await call.message.delete()
-    await bot.send_message(call.from_user.id,
-                           f"👤*Hi! {call.from_user.first_name if call.from_user.first_name else ''} "
-                           f"{call.from_user.last_name if call.from_user.last_name else ''}\n I'm "
-                           f"bot Student Assistant.*", parse_mode="Markdown", reply_markup=markup.inline_keyboard_menu)
+    await bot.send_message(
+        call.from_user.id, f"👤*Hi! {call.from_user.first_name if call.from_user.first_name else ''} "
+                           f"{call.from_user.last_name if call.from_user.last_name else ''}\n "
+                           f"I'm bot Student Assistant.*", parse_mode="Markdown",
+        reply_markup=markup.inline_keyboard_menu
+    )
 
 
 @dp.callback_query_handler(text="BACK_TO_FINANCE")
@@ -136,12 +138,27 @@ async def add_incomes(call: types.CallbackQuery):
     @dp.message_handler()
     async def adding_incomes(message: types.Message):
         try:
-            income_ = Finances.add_income(message['text'])
+            income_ = Finances.add_incomes(message['text'])
+        except exceptions.AddIncomeError as exp:
+            await message.answer(str(exp))\
+
+
+
+@dp.callback_query_handler(text='🖊️Edit budget🖊️')
+async def edit_budget(call: types.CallbackQuery):
+    await call.message.delete()
+
+    @dp.message_handler()
+    async def editing_budget(message: types.Message):
+        try:
+            print(message['text'])
+            Finances.edit_budget(message['text'])
         except exceptions.AddIncomeError as exp:
             await message.answer(str(exp))
-        await asyncio.sleep(20)
-        await bot.send_message(call.from_user.id, '*Choose action to perform*', parse_mode='Markdown',
-                               reply_markup=markup.inline_keyboard_finance_menu)
+
+
+    # await bot.send_message(call.from_user.id, '*Choose action to perform*', parse_mode='Markdown',
+    #                        reply_markup=markup.inline_keyboard_finance_menu)
 
 
 if __name__ == '__main__':
