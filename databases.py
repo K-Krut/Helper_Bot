@@ -34,6 +34,12 @@ def delete(table, row, value):
         connection.commit()
 
 
+# def delete_(table, row):
+#     with connection.cursor() as cursor:
+#         cursor.execute(f"DELETE FROM {table} WHERE {row}='{value}'")
+#         connection.commit()
+
+
 def update_(table, data, condition):
     columns = ', '.join([f'{i} = %s' for i in data])
     values = [[i] for i in data.values()]
