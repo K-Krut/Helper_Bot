@@ -1,5 +1,4 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.utils.callback_data import CallbackData
 
 """INLINE KEYBOARD BUTTONS"""
 
@@ -56,35 +55,49 @@ inline_keyboard_schedule_settings = InlineKeyboardMarkup(row_width=2).add(inline
 
 """ Finance buttons """
 
+
 inline_button_add_finance_category = InlineKeyboardButton('➕Add category➕', callback_data='➕Add category➕')
 inline_button_add_expense = InlineKeyboardButton('💸Add expense💸', callback_data='💸Add expense💸')
 inline_button_add_incomes = InlineKeyboardButton('💰Add incomes💰', callback_data='💰Add incomes💰')
 inline_button_budget = InlineKeyboardButton('🏛️Budget🏛️', callback_data='🏛️Budget🏛️')
 inline_button_finance_statistic = InlineKeyboardButton('📈Statistic📈', callback_data='📈Statistic📈')
+inline_button_finance_other = InlineKeyboardButton('✨Other✨', callback_data='OTHER_FINANCE_MENU')
 inline_button_back_to_finance = InlineKeyboardButton('🔙', callback_data='BACK_TO_FINANCE')
 
 inline_keyboard_finance_menu = InlineKeyboardMarkup(row_width=2).add(
     inline_button_add_incomes, inline_button_add_expense, inline_button_finance_statistic,
-    inline_button_add_finance_category, inline_button_budget, inline_button_back
+    inline_button_add_finance_category, inline_button_budget, inline_button_finance_other,
+    inline_button_back
 )
 
-inline_button_statistic_today = InlineKeyboardButton('Today', callback_data='Last week statistic')
-inline_button_statistic_by_week = InlineKeyboardButton('Last week', callback_data='Last week statistic')
-inline_button_statistic_by_month = InlineKeyboardButton('Last month', callback_data='Last month statistic')
-inline_button_statistic_by_year = InlineKeyboardButton('Last year', callback_data='Last year statistic')
+# inline_button_statistic_today = InlineKeyboardButton('Today', callback_data='TODAY_STATISTIC')
+inline_button_statistic_by_week = InlineKeyboardButton('This week', callback_data='WEEK_STATISTIC')
+inline_button_statistic_by_month = InlineKeyboardButton('This month', callback_data='YEAR_STATISTIC')
+# inline_button_statistic_by_year = InlineKeyboardButton('This year', callback_data='Last year statistic')
 
 inline_keyboard_statistic_menu = InlineKeyboardMarkup(row_width=2).add(
-    inline_button_statistic_today, inline_button_statistic_by_week,
-    inline_button_statistic_by_month, inline_button_statistic_by_year,
+    # inline_button_statistic_today,
+    inline_button_statistic_by_week, inline_button_statistic_by_month, # inline_button_statistic_by_year,
     inline_button_back_to_finance
 )
 
 inline_button_edit_budget = InlineKeyboardButton('🖊️Edit budget🖊️', callback_data='🖊️Edit budget🖊️')
 
-
 inline_keyboard_budget_menu = InlineKeyboardMarkup(row_width=2).add(
     inline_button_edit_budget, inline_button_back_to_finance
 )
 
+inline_button_see_today_expenses = InlineKeyboardButton('Today Expenses', callback_data='TODAY_EXPENSES')
+inline_button_see_week_expenses = InlineKeyboardButton('This week Expenses', callback_data='WEEK_EXPENSES')
+inline_button_see_month_expenses = InlineKeyboardButton('This month Expenses', callback_data='MONTH_EXPENSES')
 
+inline_button_see_today_incomes = InlineKeyboardButton('Today Incomes', callback_data='TODAY_INCOMES')
+inline_button_see_week_incomes = InlineKeyboardButton('This week Incomes', callback_data='WEEK_INCOMES')
+inline_button_see_month_incomes = InlineKeyboardButton('This month Incomes', callback_data='MONTH_INCOMES')
 
+inline_keyboard_see_expenses = InlineKeyboardMarkup(row_width=2).add(
+    inline_button_see_today_expenses, inline_button_see_today_incomes,
+    inline_button_see_week_expenses, inline_button_see_week_incomes,
+    inline_button_see_month_expenses, inline_button_see_month_incomes,
+    inline_button_back_to_finance
+)
