@@ -163,7 +163,10 @@ def create_category_finance(message):
 
 
 def delete_expense(row_id):
-    db.delete("expense", row_id)
+    with connection.cursor() as cursor:
+        row_id = int(row_id)
+        cursor.execute(f"delete from expenses where expense_id={row_id}")
+        connection.commit()
 
 
 def _get_now_formatted():
@@ -171,9 +174,7 @@ def _get_now_formatted():
 
 
 def _get_now_datetime():
-    tz = pytz.timezone('Europe/Moscow')
-    now = datetime.datetime.now(tz)
-    return now
+    return datetime.datetime.now()
 
 
 def get_budget_month_limit():
@@ -185,7 +186,83 @@ def get_budget_daily_limit():
     print(db.fetchall_('budget', ['daily_limit'])[0]['daily_limit'])
     return db.fetchall_('budget', ['daily_limit'])[0]['daily_limit']
 
+#
+# def last() -> List[Expense]:
+#     """Возвращает последние несколько расходов"""
+#     cursor = db.get_cursor()
+#     cursor.execute(
+#         "select e.id, e.amount, c.name "
+#         "from expense e left join category c "
+#         "on c.codename=e.category_codename "
+#         "order by created desc limit 10")
+#     rows = cursor.fetchall()
+#     last_expenses = [IncomeExpense(id=row[0], amount=row[1], category_name=row[2]) for row in rows]
+#     return last_expenses
 
 
+def today_expenses():
+    with connection.cursor() as cursor:
+        cursor.execute(
+            f'SELECT a.expense_id, a.amount, b.category_name '
+            f'FROM expenses a LEFT JOIN category b ON b.code_name=a.category '
+            f'WHERE CAST(date_time AS DATE) = CAST(CURDATE() AS DATE)'
+        )
+        rows = cursor.fetchall()
+    return [IncomeExpense(id=row[0], amount=row[1], category_name=row[2]) for row in rows]
 
 
+def this_week_expenses():
+    with connection.cursor() as cursor:
+        cursor.execute(
+            f'SELECT a.expense_id, a.amount, b.category_name '
+            f'FROM expenses a LEFT JOIN category b ON b.code_name=a.category '
+            f'WHERE yearweek(CURDATE()) = yearweek(date_time)'
+        )
+        rows = cursor.fetchall()
+    return [IncomeExpense(id=row[0], amount=row[1], category_name=row[2]) for row in rows]
+
+
+def this_month_expenses():
+    with connection.cursor() as cursor:
+        cursor.execute(
+            f'SELECT a.expense_id, a.amount, b.category_name '
+            f'FROM expenses a LEFT JOIN category b ON b.code_name=a.category '
+            f'WHERE MONTH(date_time)=MONTH(CURDATE())'
+            f'and YEAR(date_time)=YEAR(CURDATE());'
+        )
+        rows = cursor.fetchall()
+    return [IncomeExpense(id=row[0], amount=row[1], category_name=row[2]) for row in rows]
+
+
+def today_incomes():
+    with connection.cursor() as cursor:
+        cursor.execute(
+            f'SELECT a.income_id, a.amount, b.category_name '
+            f'FROM incomes a LEFT JOIN category b ON b.code_name=a.category '
+            f'WHERE CAST(date_time AS DATE) = CAST(CURDATE() AS DATE)'
+        )
+        rows = cursor.fetchall()
+    return [IncomeExpense(id=row[0], amount=row[1], category_name=row[2]) for row in rows]
+
+
+def this_week_incomes():
+    with connection.cursor() as cursor:
+        cursor.execute(
+            f'SELECT a.income_id, a.amount, b.category_name '
+            f'FROM incomes a LEFT JOIN category b ON b.code_name=a.category '
+            f'WHERE yearweek(CURDATE()) = yearweek(date_time)'
+        )
+        rows = cursor.fetchall()
+    return [IncomeExpense(id=row[0], amount=row[1], category_name=row[2]) for row in rows]
+
+
+def this_month_incomes():
+    with connection.cursor() as cursor:
+        cursor.execute(
+            f'SELECT a.income_id, a.amount, b.category_name '
+            f'FROM incomes a LEFT JOIN category b ON b.code_name=a.category '
+            f'WHERE MONTH(date_time)=MONTH(CURDATE())'
+            f'and YEAR(date_time)=YEAR(CURDATE());'
+        )
+        rows = cursor.fetchall()
+    return [IncomeExpense(id=row[0], amount=row[1], category_name=row[2]) for row in rows]
