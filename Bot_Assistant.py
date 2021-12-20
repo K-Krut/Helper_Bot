@@ -48,19 +48,27 @@ class Note(StatesGroup):
 list_of_themes = []
 
 
+# @dp.message_handler(commands=['start'])
+# async def send_welcome_message(message: types.Message):
+#     await message.delete()
+#     with connection.cursor() as cursor:
+#         cursor.execute(f"SELECT id FROM users WHERE id = {message.from_user.id};")
+#         if not cursor.rowcount:
+#             insert_query = f"INSERT INTO users(id) VALUES({message.from_user.id});"
+#             cursor.execute(insert_query)
+#             connection.commit()
+#     await bot.send_message(message.from_user.id,
+#                            f"👤<b>Hi! {message.from_user.first_name if message.from_user.first_name else ''} "
+#                            f"{message.from_user.last_name if message.from_user.last_name else ''}\n I'm "
+#                            f"bot Student Assistant.</b>", parse_mode="HTML", reply_markup=markup.inline_keyboard_menu)
 @dp.message_handler(commands=['start'])
 async def send_welcome_message(message: types.Message):
-    await message.delete()
-    with connection.cursor() as cursor:
-        cursor.execute(f"SELECT id FROM users WHERE id = {message.from_user.id};")
-        if not cursor.rowcount:
-            insert_query = f"INSERT INTO users(id) VALUES({message.from_user.id});"
-            cursor.execute(insert_query)
-            connection.commit()
-    await bot.send_message(message.from_user.id,
-                           f"👤<b>Hi! {message.from_user.first_name if message.from_user.first_name else ''} "
-                           f"{message.from_user.last_name if message.from_user.last_name else ''}\n I'm "
-                           f"bot Student Assistant.</b>", parse_mode="HTML", reply_markup=markup.inline_keyboard_menu)
+    await bot.send_message(
+        message.from_user.id, f"👤*Hi! {message.from_user.first_name if message.from_user.first_name else ''} "
+                              f"{message.from_user.last_name if message.from_user.last_name else ''}\n "
+                              f"I'm bot Student Assistant.*", parse_mode="Markdown",
+        reply_markup=markup.inline_keyboard_menu
+    )
 
 
 @dp.callback_query_handler(text="📝Notes📝")
@@ -489,6 +497,13 @@ async def note_menu(call: types.CallbackQuery):
                            reply_markup=markup.inline_keyboard_statistic_menu)
 
 
+@dp.callback_query_handler(text='OTHER_FINANCE_MENU')
+async def note_menu(call: types.CallbackQuery):
+    await call.message.delete()
+    await bot.send_message(call.from_user.id, "*Choose action to perform*", parse_mode="Markdown",
+                           reply_markup=markup.inline_keyboard_see_expenses)
+
+
 @dp.callback_query_handler(text='➕Add category➕')
 async def add_category(call: types.CallbackQuery):
     await call.message.delete()
@@ -539,9 +554,9 @@ async def add_incomes(call: types.CallbackQuery):
         try:
             income_ = Finances.add_incomes(message['text'])
         except exceptions.AddIncomeError as exp:
-            await message.answer(str(exp)) \
- \
- \
+            await message.answer(str(exp))
+
+
 @dp.callback_query_handler(text='🖊️Edit budget🖊️')
 async def edit_budget(call: types.CallbackQuery):
     await call.message.delete()
@@ -549,13 +564,122 @@ async def edit_budget(call: types.CallbackQuery):
     @dp.message_handler()
     async def editing_budget(message: types.Message):
         try:
-            print(message['text'])
             Finances.edit_budget(message['text'])
         except exceptions.AddIncomeError as exp:
             await message.answer(str(exp))
 
-    # await bot.send_message(call.from_user.id, '*Choose action to perform*', parse_mode='Markdown',
-    #                        reply_markup=markup.inline_keyboard_finance_menu)
+
+@dp.message_handler(lambda message: message.text.startswith('/del'))
+async def del_expense(message: types.Message):
+    row_id = int(message.text[4:])
+    Finances.delete_expense(row_id)
+
+
+@dp.callback_query_handler(text='TODAY_EXPENSES')
+async def today_expenses_handler(call: types.CallbackQuery):
+    today_expenses_ = Finances.today_expenses()
+    if not today_expenses_:
+        await bot.send_message(call.from_user.id, 'Today expenses were not added', parse_mode='Markdown')
+        return
+    today_expenses_rows = [
+        f'{expense.amount} UAH on {expense.category_name} — /del{expense.id}'
+        for expense in today_expenses_
+    ]
+    await bot.send_message(call.from_user.id, "\n\n".join(today_expenses_rows), parse_mode='Markdown')
+
+
+@dp.callback_query_handler(text='WEEK_EXPENSES')
+async def today_expenses_handler(call: types.CallbackQuery):
+    this_week_expenses_ = Finances.this_week_expenses()
+    if not this_week_expenses_:
+        await bot.send_message(call.from_user.id, 'This week were not added', parse_mode='Markdown')
+        return
+    this_week_expenses_rows = [
+        f'{expense.amount} UAH on {expense.category_name} — /del{expense.id}'
+        for expense in this_week_expenses_
+    ]
+    await bot.send_message(call.from_user.id, "\n\n".join(this_week_expenses_rows), parse_mode='Markdown')
+
+
+@dp.callback_query_handler(text='MONTH_EXPENSES')
+async def today_expenses_handler(call: types.CallbackQuery):
+    this_month_expenses_ = Finances.this_month_expenses()
+    if not this_month_expenses_:
+        await bot.send_message(call.from_user.id, 'Today expenses were not added', parse_mode='Markdown')
+        return
+    this_month_expenses_rows = [
+        f'{expense.amount} UAH on {expense.category_name} — /del{expense.id}'
+        for expense in this_month_expenses_
+    ]
+    await bot.send_message(call.from_user.id, "\n\n".join(this_month_expenses_rows), parse_mode='Markdown')
+
+
+@dp.callback_query_handler(text='TODAY_INCOMES')
+async def today_expenses_handler(call: types.CallbackQuery):
+    today_expenses_ = Finances.today_incomes()
+    if not today_expenses_:
+        await bot.send_message(call.from_user.id, 'Today expenses were not added', parse_mode='Markdown')
+        return
+    today_expenses_rows = [
+        f'{expense.amount} UAH on {expense.category_name} — /del{expense.id}'
+        for expense in today_expenses_
+    ]
+    await bot.send_message(call.from_user.id, "\n\n".join(today_expenses_rows), parse_mode='Markdown')
+
+
+@dp.callback_query_handler(text='WEEK_INCOMES')
+async def today_expenses_handler(call: types.CallbackQuery):
+    this_week_expenses_ = Finances.this_week_incomes()
+    if not this_week_expenses_:
+        await bot.send_message(call.from_user.id, 'This week were not added', parse_mode='Markdown')
+        return
+    this_week_expenses_rows = [
+        f'{expense.amount} UAH on {expense.category_name} — /del{expense.id}'
+        for expense in this_week_expenses_
+    ]
+    await bot.send_message(call.from_user.id, "\n\n".join(this_week_expenses_rows), parse_mode='Markdown')
+
+
+@dp.callback_query_handler(text='MONTH_INCOMES')
+async def today_expenses_handler(call: types.CallbackQuery):
+    this_month_expenses_ = Finances.this_month_incomes()
+    if not this_month_expenses_:
+        await bot.send_message(call.from_user.id, 'Today expenses were not added', parse_mode='Markdown')
+        return
+    this_month_expenses_rows = [
+        f'{expense.amount} UAH on {expense.category_name} — /del{expense.id}'
+        for expense in this_month_expenses_
+    ]
+    await bot.send_message(call.from_user.id, "\n\n".join(this_month_expenses_rows), parse_mode='Markdown')
+
+# @dp.callback_query_handler(text='🖊️Edit budget🖊️')
+# async def edit_budget(call: types.CallbackQuery):
+#     await call.message.delete()
+#
+#     @dp.message_handler()
+#     async def editing_budget(message: types.Message):
+#         try:
+#             print(message['text'])
+#             Finances.edit_budget(message['text'])
+#         except exceptions.AddIncomeError as exp:
+#             await message.answer(str(exp))
+#
+#     # await bot.send_message(call.from_user.id, '*Choose action to perform*', parse_mode='Markdown',
+#     #                        reply_markup=markup.inline_keyboard_finance_menu)
+# @dp.callback_query_handler(text='🖊️Edit budget🖊️')
+# async def edit_budget(call: types.CallbackQuery):
+#     await call.message.delete()
+#
+#     @dp.message_handler()
+#     async def editing_budget(message: types.Message):
+#         try:
+#             print(message['text'])
+#             Finances.edit_budget(message['text'])
+#         except exceptions.AddIncomeError as exp:
+#             await message.answer(str(exp))
+#
+#     # await bot.send_message(call.from_user.id, '*Choose action to perform*', parse_mode='Markdown',
+#     #                        reply_markup=markup.inline_keyboard_finance_menu)
 
 
 if __name__ == '__main__':
