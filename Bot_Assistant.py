@@ -48,27 +48,19 @@ class Note(StatesGroup):
 list_of_themes = []
 
 
-# @dp.message_handler(commands=['start'])
-# async def send_welcome_message(message: types.Message):
-#     await message.delete()
-#     with connection.cursor() as cursor:
-#         cursor.execute(f"SELECT id FROM users WHERE id = {message.from_user.id};")
-#         if not cursor.rowcount:
-#             insert_query = f"INSERT INTO users(id) VALUES({message.from_user.id});"
-#             cursor.execute(insert_query)
-#             connection.commit()
-#     await bot.send_message(message.from_user.id,
-#                            f"👤<b>Hi! {message.from_user.first_name if message.from_user.first_name else ''} "
-#                            f"{message.from_user.last_name if message.from_user.last_name else ''}\n I'm "
-#                            f"bot Student Assistant.</b>", parse_mode="HTML", reply_markup=markup.inline_keyboard_menu)
-@dp.message_handler(commands=['start'])
-async def send_welcome_message(message: types.Message):
-    await bot.send_message(
-        message.from_user.id, f"👤*Hi! {message.from_user.first_name if message.from_user.first_name else ''} "
-                              f"{message.from_user.last_name if message.from_user.last_name else ''}\n "
-                              f"I'm bot Student Assistant.*", parse_mode="Markdown",
-        reply_markup=markup.inline_keyboard_menu
-    )
+ @dp.message_handler(commands=['start'])
+ async def send_welcome_message(message: types.Message):
+     await message.delete()
+     with connection.cursor() as cursor:
+         cursor.execute(f"SELECT id FROM users WHERE id = {message.from_user.id};")
+         if not cursor.rowcount:
+             insert_query = f"INSERT INTO users(id) VALUES({message.from_user.id});"
+            cursor.execute(insert_query)
+            connection.commit()
+     await bot.send_message(message.from_user.id,
+                            f"👤<b>Hi! {message.from_user.first_name if message.from_user.first_name else ''} "
+                            f"{message.from_user.last_name if message.from_user.last_name else ''}\n I'm "
+                            f"bot Student Assistant.</b>", parse_mode="HTML", reply_markup=markup.inline_keyboard_menu)
 
 
 @dp.callback_query_handler(text="📝Notes📝")
@@ -651,36 +643,6 @@ async def today_expenses_handler(call: types.CallbackQuery):
         for expense in this_month_expenses_
     ]
     await bot.send_message(call.from_user.id, "\n\n".join(this_month_expenses_rows), parse_mode='Markdown')
-
-# @dp.callback_query_handler(text='🖊️Edit budget🖊️')
-# async def edit_budget(call: types.CallbackQuery):
-#     await call.message.delete()
-#
-#     @dp.message_handler()
-#     async def editing_budget(message: types.Message):
-#         try:
-#             print(message['text'])
-#             Finances.edit_budget(message['text'])
-#         except exceptions.AddIncomeError as exp:
-#             await message.answer(str(exp))
-#
-#     # await bot.send_message(call.from_user.id, '*Choose action to perform*', parse_mode='Markdown',
-#     #                        reply_markup=markup.inline_keyboard_finance_menu)
-# @dp.callback_query_handler(text='🖊️Edit budget🖊️')
-# async def edit_budget(call: types.CallbackQuery):
-#     await call.message.delete()
-#
-#     @dp.message_handler()
-#     async def editing_budget(message: types.Message):
-#         try:
-#             print(message['text'])
-#             Finances.edit_budget(message['text'])
-#         except exceptions.AddIncomeError as exp:
-#             await message.answer(str(exp))
-#
-#     # await bot.send_message(call.from_user.id, '*Choose action to perform*', parse_mode='Markdown',
-#     #                        reply_markup=markup.inline_keyboard_finance_menu)
-
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
