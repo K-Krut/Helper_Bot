@@ -13,8 +13,10 @@ logging.basicConfig(level=logging.INFO)
 bot = Bot(token=config.TOKEN)
 dp = Dispatcher(bot, storage=MemoryStorage())
 
-connection = pymysql.connect(host=config.host,
-                             port=3306,
-                             user=config.user,
-                             password=config.password,
-                             db=config.db_name)
+connection = pymysql.connect(
+    host="localhost",
+    port=3306,
+    user="root",
+    password="Varta4899",
+    db='finance'
+)

@@ -186,7 +186,7 @@ def get_budget_daily_limit():
     print(db.fetchall_('budget', ['daily_limit'])[0]['daily_limit'])
     return db.fetchall_('budget', ['daily_limit'])[0]['daily_limit']
 
-#
+
 # def last() -> List[Expense]:
 #     """Возвращает последние несколько расходов"""
 #     cursor = db.get_cursor()

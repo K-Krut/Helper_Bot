@@ -1,6 +1,7 @@
 import asyncio
 
 import Finances
+import Statistic
 import exceptions
 from imports import *
 
@@ -461,6 +462,10 @@ async def back(call: types.CallbackQuery):
                            f"bot Student Assistant.</b>", parse_mode="HTML", reply_markup=markup.inline_keyboard_menu)
 
 
+
+
+""" Finance handlers  """
+
 @dp.callback_query_handler(text="BACK_TO_FINANCE")
 async def back(call: types.CallbackQuery):
     await call.message.delete()
@@ -468,9 +473,6 @@ async def back(call: types.CallbackQuery):
         call.from_user.id, "*Choose action to perform*", parse_mode="Markdown",
         reply_markup=markup.inline_keyboard_finance_menu
     )
-
-
-""" Finance handlers  """
 
 
 @dp.callback_query_handler(text='💰Finance💰')
@@ -651,6 +653,28 @@ async def today_expenses_handler(call: types.CallbackQuery):
         for expense in this_month_expenses_
     ]
     await bot.send_message(call.from_user.id, "\n\n".join(this_month_expenses_rows), parse_mode='Markdown')
+
+
+@dp.callback_query_handler(text='WEEK_STATISTIC')
+async def this_week_statistic_handler(call: types.CallbackQuery):
+    await call.message.delete()
+    print('@dp.callback_query_handler(text=WEEK_STATISTIC)')
+    file_name_, result = Statistic.stats_for_current_week()
+    await bot.send_photo(call.from_user.id, open(f'{file_name_}.png', 'rb'), caption=f'Total amount: {result}',
+                         reply_markup=markup.inline_button_back)
+    await asyncio.sleep(10)
+    Statistic.delete_stats_image(file_name_)
+
+
+@dp.callback_query_handler(text='MONTH_STATISTIC')
+async def this_month_statistic_handler(call: types.CallbackQuery):
+    await call.message.delete()
+    print('@dp.callback_query_handler(text=MONTH_STATISTIC)')
+    file_name_, result = Statistic.stats_for_current_week()
+    await bot.send_photo(call.from_user.id, open(f'{file_name_}.png', 'rb'), caption=f'Total amount: {result}')
+    await asyncio.sleep(10)
+    Statistic.delete_stats_image(file_name_)
+
 
 # @dp.callback_query_handler(text='🖊️Edit budget🖊️')
 # async def edit_budget(call: types.CallbackQuery):
