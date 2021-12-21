@@ -7,15 +7,15 @@ from matplotlib.ticker import AutoMinorLocator
 from random import shuffle
 from imports import connection
 
-
-class ExpensesData:
-    values: int
-    dates: str
-
-
-class IncomesData:
-    values: list
-    dates: list
+#
+# class ExpensesData:
+#     values: int
+#     dates: str
+#
+#
+# class IncomesData:
+#     values: list
+#     dates: list
 
 
 def _get_formatted(date):
@@ -28,11 +28,17 @@ def merging_list(arr1, arr2):
             arr1.append(i)
     return arr1
 
+
+def delete_stats_image(name_):
+    path_ = os.getcwd().replace(f'\\', '/')
+    os.remove(f"{path_}/{name_}.png")
+
+
 def get_week_expenses_for_stats():
     with connection.cursor() as cursor:
         cursor.execute(
             f'SELECT  SUM(amount), CAST(date_time AS DATE) AS Date_, date_time FROM expenses '
-            f'WHERE yearweek(CURDATE()) = yearweek(date_time) '
+            f'WHERE yearweek(date_time, 1)  = yearweek(CURDATE(), 1) '
             f'GROUP BY CAST(date_time AS DATE) '
             f'ORDER BY date_time ASC'
         )
@@ -44,7 +50,7 @@ def get_week_incomes_for_stats():
     with connection.cursor() as cursor:
         cursor.execute(
             'SELECT  SUM(amount), CAST(date_time AS DATE) AS Date_, date_time FROM incomes '
-            'WHERE yearweek(CURDATE()) = yearweek(date_time) '
+            'WHERE yearweek(date_time, 1)  = yearweek(CURDATE(), 1) '
             'GROUP BY CAST(date_time AS DATE) '
             'ORDER BY date_time ASC'
         )
@@ -87,7 +93,7 @@ def week_data_for_stats():
 def month_data_for_stats():
     expenses_ = get_month_expenses_for_stats()
     incomes_ = get_month_incomes_for_stats()
-    return expenses_.values, expenses_.dates, incomes_.values, incomes_.dates
+    return expenses_[0], expenses_[1], incomes_[0], incomes_[1]
 
 
 def stats_for_current_week():
@@ -128,12 +134,39 @@ def create_diagram_for_stats(values_expenses, values_incomes, dates_expenses, da
     shuffle(k)
     name_ = ''.join(i for i in k[:10])
     plt.savefig(name_)
-    return name_, 0
+    return name_
 
 
-def delete_stats_image(name_):
-    path_ = os.getcwd().replace(f'\\', '/')
-    os.remove(f"{path_}/{name_}.png")
+def calculating_results(values_expenses, values_incomes):
+    total_expenses = sum(values_expenses)
+    total_incomes = sum(values_incomes)
+    pure_profit = total_incomes - total_expenses
+    return total_expenses, total_incomes, pure_profit
+
+
+def resulting_for_the_current_week():
+    current_week_data_ = week_data_for_stats()
+    return calculating_results(current_week_data_[0], current_week_data_[2])
+
+
+def resulting_for_the_current_month():
+    current_month_data_ = month_data_for_stats()
+    return calculating_results(current_month_data_[0], current_month_data_[2])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # print(get_week_incomes_for_stats())

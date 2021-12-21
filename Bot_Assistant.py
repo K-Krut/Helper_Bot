@@ -659,9 +659,12 @@ async def today_expenses_handler(call: types.CallbackQuery):
 async def this_week_statistic_handler(call: types.CallbackQuery):
     await call.message.delete()
     print('@dp.callback_query_handler(text=WEEK_STATISTIC)')
-    file_name_, result = Statistic.stats_for_current_week()
-    await bot.send_photo(call.from_user.id, open(f'{file_name_}.png', 'rb'), caption=f'Total amount: {result}',
-                         reply_markup=markup.inline_button_back)
+    file_name_ = Statistic.stats_for_current_week()
+    result_ = Statistic.resulting_for_the_current_week()
+    await bot.send_photo(
+        call.from_user.id, open(f'{file_name_}.png', 'rb'),
+        caption=f'Total expenses: {result_[0]}\nTotal incomes: {result_[1]}\nPure profit: {result_[2]}'
+    )
     await asyncio.sleep(10)
     Statistic.delete_stats_image(file_name_)
 
@@ -670,8 +673,13 @@ async def this_week_statistic_handler(call: types.CallbackQuery):
 async def this_month_statistic_handler(call: types.CallbackQuery):
     await call.message.delete()
     print('@dp.callback_query_handler(text=MONTH_STATISTIC)')
-    file_name_, result = Statistic.stats_for_current_week()
-    await bot.send_photo(call.from_user.id, open(f'{file_name_}.png', 'rb'), caption=f'Total amount: {result}')
+    file_name_ = Statistic.stats_for_current_month()
+    result_ = Statistic.resulting_for_the_current_month()
+    await bot.send_photo(
+        call.from_user.id, open(f'{file_name_}.png', 'rb'),
+        caption=f'<b>Total expenses:</b> {result_[0]}\n<b>Total incomes:</b> '
+                f'{result_[1]}\n<b>Pure profit: </b>{result_[2]}', parse_mode='HTML'
+    )
     await asyncio.sleep(10)
     Statistic.delete_stats_image(file_name_)
 
