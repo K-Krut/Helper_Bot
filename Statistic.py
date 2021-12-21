@@ -34,11 +34,11 @@ def delete_stats_image(name_):
     os.remove(f"{path_}/{name_}.png")
 
 
-def get_week_expenses_for_stats():
+def get_week_expenses_for_stats(user_id):
     with connection.cursor() as cursor:
         cursor.execute(
-            f'SELECT  SUM(amount), CAST(date_time AS DATE) AS Date_, date_time FROM expenses '
-            f'WHERE yearweek(date_time, 1)  = yearweek(CURDATE(), 1) '
+            f'SELECT SUM(amount), CAST(date_time AS DATE) AS Date_, date_time FROM expenses '
+            f'WHERE yearweek(date_time, 1) = yearweek(CURDATE(), 1) AND user_id = {user_id} '
             f'GROUP BY CAST(date_time AS DATE) '
             f'ORDER BY date_time ASC'
         )
@@ -46,24 +46,24 @@ def get_week_expenses_for_stats():
         return [i[0] for i in rows], [_get_formatted(j[1]) for j in rows]
 
 
-def get_week_incomes_for_stats():
+def get_week_incomes_for_stats(user_id):
     with connection.cursor() as cursor:
         cursor.execute(
-            'SELECT  SUM(amount), CAST(date_time AS DATE) AS Date_, date_time FROM incomes '
-            'WHERE yearweek(date_time, 1)  = yearweek(CURDATE(), 1) '
-            'GROUP BY CAST(date_time AS DATE) '
-            'ORDER BY date_time ASC'
+            f'SELECT SUM(amount), CAST(date_time AS DATE) AS Date_, date_time FROM incomes '
+            f'WHERE yearweek(date_time, 1)  = yearweek(CURDATE(), 1)  AND user_id = {user_id} '
+            f'GROUP BY CAST(date_time AS DATE) '
+            f'ORDER BY date_time ASC'
         )
         rows = cursor.fetchall()
         return [i[0] for i in rows], [_get_formatted(j[1]) for j in rows]
 
 
-def get_month_expenses_for_stats():
+def get_month_expenses_for_stats(user_id):
     with connection.cursor() as cursor:
         cursor.execute(
-            f'SELECT  SUM(amount), CAST(date_time AS DATE) AS Date_, date_time FROM expenses '
+            f'SELECT SUM(amount), CAST(date_time AS DATE) AS Date_, date_time FROM expenses '
             f'WHERE MONTH(date_time)=MONTH(CURDATE())'
-            f'and YEAR(date_time)=YEAR(CURDATE())'
+            f'and YEAR(date_time)=YEAR(CURDATE()) AND user_id = {user_id}'
             f'GROUP BY CAST(date_time AS DATE) '
             f'ORDER BY date_time ASC'
         )
@@ -71,12 +71,12 @@ def get_month_expenses_for_stats():
         return [i[0] for i in rows], [_get_formatted(j[1]) for j in rows]
 
 
-def get_month_incomes_for_stats():
+def get_month_incomes_for_stats(user_id):
     with connection.cursor() as cursor:
         cursor.execute(
-            f'SELECT  SUM(amount), CAST(date_time AS DATE) AS Date_, date_time FROM incomes '
+            f'SELECT SUM(amount), CAST(date_time AS DATE) AS Date_, date_time FROM incomes '
             f'WHERE MONTH(date_time)=MONTH(CURDATE())'
-            f'and YEAR(date_time)=YEAR(CURDATE())'
+            f'AND YEAR(date_time)=YEAR(CURDATE()) AND user_id = {user_id}'
             f'GROUP BY CAST(date_time AS DATE) '
             f'ORDER BY date_time ASC'
         )
@@ -84,28 +84,28 @@ def get_month_incomes_for_stats():
         return [i[0] for i in rows], [_get_formatted(j[1]) for j in rows]
 
 
-def week_data_for_stats():
-    expenses_ = get_week_expenses_for_stats()
-    incomes_ = get_week_incomes_for_stats()
+def week_data_for_stats(user_id):
+    expenses_ = get_week_expenses_for_stats(user_id)
+    incomes_ = get_week_incomes_for_stats(user_id)
     return expenses_[0], expenses_[1], incomes_[0], incomes_[1]
 
 
-def month_data_for_stats():
-    expenses_ = get_month_expenses_for_stats()
-    incomes_ = get_month_incomes_for_stats()
+def month_data_for_stats(user_id):
+    expenses_ = get_month_expenses_for_stats(user_id)
+    incomes_ = get_month_incomes_for_stats(user_id)
     return expenses_[0], expenses_[1], incomes_[0], incomes_[1]
 
 
-def stats_for_current_week():
+def stats_for_current_week(user_id):
     print('stats_for_current_week')
-    current_week_data_ = week_data_for_stats()
+    current_week_data_ = week_data_for_stats(user_id)
     return create_diagram_for_stats(current_week_data_[0], current_week_data_[2],
                                     current_week_data_[1], current_week_data_[3], 'Week Expenses')
 
 
-def stats_for_current_month():
+def stats_for_current_month(user_id):
     print('stats_for_current_month')
-    current_month_data_ = month_data_for_stats()
+    current_month_data_ = month_data_for_stats(user_id)
     return create_diagram_for_stats(current_month_data_[0], current_month_data_[2],
                                     current_month_data_[1], current_month_data_[3], 'Month Expenses')
 
@@ -144,13 +144,13 @@ def calculating_results(values_expenses, values_incomes):
     return total_expenses, total_incomes, pure_profit
 
 
-def resulting_for_the_current_week():
-    current_week_data_ = week_data_for_stats()
+def resulting_for_the_current_week(user_id):
+    current_week_data_ = week_data_for_stats(user_id)
     return calculating_results(current_week_data_[0], current_week_data_[2])
 
 
-def resulting_for_the_current_month():
-    current_month_data_ = month_data_for_stats()
+def resulting_for_the_current_month(user_id):
+    current_month_data_ = month_data_for_stats(user_id)
     return calculating_results(current_month_data_[0], current_month_data_[2])
 
 

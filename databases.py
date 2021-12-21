@@ -27,6 +27,8 @@ def fetchall_(table, columns):
         result_.append(dict_row)
     return result_
 
+###################################################################################################################
+
 
 def delete(table, row, value):
     with connection.cursor() as cursor:
@@ -39,7 +41,7 @@ def delete(table, row, value):
 #         cursor.execute(f"DELETE FROM {table} WHERE {row}='{value}'")
 #         connection.commit()
 
-
+#######################################################################################################################
 def update_(table, data, condition):
     columns = ', '.join([f'{i} = %s' for i in data])
     values = [[i] for i in data.values()]
