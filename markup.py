@@ -73,11 +73,10 @@ inline_keyboard_finance_menu = InlineKeyboardMarkup(row_width=2).add(
 # inline_button_statistic_today = InlineKeyboardButton('Today', callback_data='TODAY_STATISTIC')
 inline_button_statistic_by_week = InlineKeyboardButton('This week', callback_data='WEEK_STATISTIC')
 inline_button_statistic_by_month = InlineKeyboardButton('This month', callback_data='MONTH_STATISTIC')
-# inline_button_statistic_by_year = InlineKeyboardButton('This year', callback_data='Last year tryings_my')
 
 inline_keyboard_statistic_menu = InlineKeyboardMarkup(row_width=2).add(
     # inline_button_statistic_today,
-    inline_button_statistic_by_week, inline_button_statistic_by_month, # inline_button_statistic_by_year,
+    inline_button_statistic_by_week, inline_button_statistic_by_month,
     inline_button_back_to_finance
 )
 
