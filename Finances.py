@@ -104,27 +104,22 @@ def _parse_message(message):
     if not regexp or not regexp.group(0) \
             or not regexp.group(1) or not regexp.group(2):
         raise AddCategoryError(str(message))
-    ###################################################################################################################
-    # amount = regexp_result.group(1).replace(" ", "")
-    # category_text = regexp_result.group(2).strip().lower()
     return Message(amount=int(regexp.group(1).replace(" ", "")), category_text=regexp.group(2).strip().lower())
 
 
 def _parse_budget_message(message):
-    # regexp_ = re.match(r'daily ([1-9]([0-9]){0,10}) month ([1-9]([0-9]){0,10})', message)
     regexp_ = re.match(r'(daily) ([1-9]([0-9]){0,10}) (month) ([1-9]([0-9]){0,10})',
                        str(message).lower().replace("  ", " "))
     print(f'{regexp_.group(1)}, {regexp_.group(2)}, {regexp_.group(4)}, {regexp_.group(5)}')
     # if not (regexp_.group(1) and regexp_.group(2)) or (regexp_.group(4) and regexp_.group(5)):
     if not regexp_.group(0):
-        raise ChangeBudgetError('SOENENE=ENENE')
-    print(str(message))
+        raise ChangeBudgetError(str(message))
     return BudgetMessage(daily_amount=int(regexp_.group(2)), month_amount=int(regexp_.group(5)))
 
 
 def check_user_exists(user_id):
     with connection.cursor() as cursor:
-        cursor.execute(f"SELECT id FROM users WHERE id = {user_id};")
+        cursor.execute(f"SELECT id FROM users WHERE id = {user_id}")
     return bool(cursor.rowcount)
 
 
@@ -165,7 +160,7 @@ def edit_budget(message, user_id):
             'month_limit': parsed_message.month_amount,
             'user_id': str(user_id)
         },
-        "code_name = 'general'"
+        f"code_name = 'general' AND user_id = {user_id}"
     )
 
 
@@ -199,6 +194,12 @@ def create_category_finance(message, user_id):
     return CreateCategory(code_name_=parsed_data[0] + '_', category_name_=parsed_data[0], aliases_text_=parsed_data[1])
 
 
+def see_categories(user_id):
+    with connection.cursor() as cursor:
+        cursor.execute(f'SELECT category_name, aliases_ FROM category WHERE user_id = {str(user_id)}')
+        rows = cursor.fetchall()
+    return [CategoryMessage(name_=row[0], category_text=row[1]) for row in rows]
+
 def delete_expense(row_id, user_id):
     with connection.cursor() as cursor:
         row_id = int(row_id)
@@ -220,8 +221,6 @@ def _get_now_formatted():
 def _get_now_datetime():
     return datetime.datetime.now()
 
-########################################################################################################################
-
 
 def set_default_budget(user_id):
     with connection.cursor() as cursor:
@@ -230,34 +229,36 @@ def set_default_budget(user_id):
 
 
 def get_budget_month_limit(user_id):
-    print(db.fetchall_('budget', f"{['month_limit']} {user_id}")[0]['month_limit'])
-    return db.fetchall_('budget', f"{['month_limit']} {user_id}")[0]['month_limit']
+    print(f"{['month_limit']} {user_id}")
+    return db.fetchone_for_budget('budget', f"month_limit".split(), f'user_id = {user_id}')
 
 
 def get_budget_daily_limit(user_id):
-    print(db.fetchall_('budget', f"{['daily_limit']} {user_id}")[0]['daily_limit'])
-    return db.fetchall_('budget', f"{['daily_limit']} {user_id}")[0]['daily_limit']
+    print(f"{['daily_limit']} {user_id}")
+    return db.fetchone_for_budget('budget', f"daily_limit".split(), f'user_id = {user_id}')
 
 
 def today_expenses(user_id):
     with connection.cursor() as cursor:
         cursor.execute(
             f'SELECT a.expense_id, a.amount, b.category_name '
-            f'FROM expenses a LEFT JOIN category b ON b.code_name = a.category AND a.user_id = b.user_id '
-            f'WHERE CAST(date_time AS DATE) = CAST(CURDATE() AS DATE) AND a.user_id = {str(user_id)}'
+            f'FROM expenses a LEFT JOIN category b ON b.code_name=a.category AND a.user_id = b.user_id '
+            f'WHERE (CAST(date_time AS DATE) = CAST(CURDATE() AS DATE) AND a.user_id = {str(user_id)})'
         )
         rows = cursor.fetchall()
     return [IncomeExpense(id=row[0], amount=row[1], category_name=row[2]) for row in rows]
 
 
 def this_week_expenses(user_id):
+    print('this_week_expenses')
     with connection.cursor() as cursor:
         cursor.execute(
-            f'SELECT a.expense_id, a.amount, a.user_id, b.category_name, b.user_id '
-            f'FROM expenses a LEFT JOIN category b ON b.code_name = a.category AND a.user_id = b.user_id '
-            f'WHERE YEARWEEK(CURDATE()) = YEARWEEK(date_time) AND a.user_id = {str(user_id)}'
+            f'SELECT a.expense_id, a.amount, b.category_name '
+            f'FROM expenses a LEFT JOIN category b ON b.code_name=a.category AND a.user_id = b.user_id '
+            f'WHERE (YEARWEEK(CURDATE()) = YEARWEEK(date_time) AND a.user_id = {str(user_id)})'
         )
         rows = cursor.fetchall()
+        print(rows)
     return [IncomeExpense(id=row[0], amount=row[1], category_name=row[2]) for row in rows]
 
 
@@ -265,9 +266,9 @@ def this_month_expenses(user_id):
     with connection.cursor() as cursor:
         cursor.execute(
             f'SELECT a.expense_id, a.amount, b.category_name '
-            f'FROM expenses a LEFT JOIN category b ON b.code_name = a.category AND a.user_id = b.user_id '
-            f'WHERE MONTH(date_time)=MONTH(CURDATE())'
-            f'and YEAR(date_time)=YEAR(CURDATE()) AND AND a.user_id =  {str(user_id)}'
+            f'FROM expenses a LEFT JOIN category b ON b.code_name=a.category AND a.user_id = b.user_id '
+            f'WHERE (MONTH(date_time) = MONTH(CURDATE()) AND '
+            f'YEAR(date_time) = YEAR(CURDATE()) AND a.user_id = {str(user_id)})'
         )
         rows = cursor.fetchall()
     return [IncomeExpense(id=row[0], amount=row[1], category_name=row[2]) for row in rows]
@@ -277,8 +278,8 @@ def today_incomes(user_id):
     with connection.cursor() as cursor:
         cursor.execute(
             f'SELECT a.income_id, a.amount, b.category_name '
-            f'FROM incomes a LEFT JOIN category b ON b.code_name = a.category AND a.user_id = b.user_id '
-            f'WHERE CAST(date_time AS DATE) = CAST(CURDATE() AS DATE) AND a.user_id = {str(user_id)}'
+            f'FROM incomes a LEFT JOIN category b ON b.code_name=a.category AND a.user_id = b.user_id '
+            f'WHERE (CAST(date_time AS DATE) = CAST(CURDATE() AS DATE) AND a.user_id = {str(user_id)})'
         )
         rows = cursor.fetchall()
     return [IncomeExpense(id=row[0], amount=row[1], category_name=row[2]) for row in rows]
@@ -288,8 +289,8 @@ def this_week_incomes(user_id):
     with connection.cursor() as cursor:
         cursor.execute(
             f'SELECT a.income_id, a.amount, b.category_name '
-            f'FROM incomes a LEFT JOIN category b ON b.code_name = a.category AND a.user_id = b.user_id '
-            f'WHERE yearweek(CURDATE()) = yearweek(date_time) AND a.user_id = {str(user_id)}'
+            f'FROM incomes a LEFT JOIN category b ON b.code_name=a.category AND a.user_id = b.user_id '
+            f'WHERE (YEARWEEK(CURDATE()) = YEARWEEK(date_time) AND a.user_id = {str(user_id)})'
         )
         rows = cursor.fetchall()
     return [IncomeExpense(id=row[0], amount=row[1], category_name=row[2]) for row in rows]
@@ -299,9 +300,9 @@ def this_month_incomes(user_id):
     with connection.cursor() as cursor:
         cursor.execute(
             f'SELECT a.income_id, a.amount, b.category_name '
-            f'FROM incomes a LEFT JOIN category b ON b.code_name = a.category AND a.user_id = b.user_id '
-            f'WHERE MONTH(date_time)=MONTH(CURDATE())'
-            f'and YEAR(date_time)=YEAR(CURDATE()) AND a.user_id = {str(user_id)}'
+            f'FROM incomes a LEFT JOIN category b ON b.code_name=a.category AND a.user_id = b.user_id '
+            f'WHERE (MONTH(date_time)=MONTH(CURDATE()) AND '
+            f'YEAR(date_time)=YEAR(CURDATE()) AND a.user_id = {str(user_id)})'
         )
         rows = cursor.fetchall()
     return [IncomeExpense(id=row[0], amount=row[1], category_name=row[2]) for row in rows]

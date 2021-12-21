@@ -8,25 +8,12 @@ from random import shuffle
 from imports import connection
 
 
-# class ExpensesData:
-#     values: int
-#     dates: str
-#
-#
-# class IncomesData:
-#     values: list
-#     dates: list
-
-
 def _get_formatted(date):
     return date.strftime('%Y-%m-%d')
 
 
 def merging_list(arr1, arr2):
-    for i in arr2:
-        if i not in arr1:
-            arr1.append(i)
-    return arr1
+    return [i for i in arr2 if i not in arr1] + arr1
 
 
 def delete_stats_image(name_):
@@ -62,8 +49,8 @@ def get_month_expenses_for_stats(user_id):
     with connection.cursor() as cursor:
         cursor.execute(
             f'SELECT SUM(amount), CAST(date_time AS DATE) AS Date_, date_time FROM expenses '
-            f'WHERE MONTH(date_time)=MONTH(CURDATE())'
-            f'and YEAR(date_time)=YEAR(CURDATE()) AND user_id = {user_id}'
+            f'WHERE MONTH(date_time) = MONTH(CURDATE()) '
+            f'AND YEAR(date_time) = YEAR(CURDATE()) AND user_id = {user_id} '
             f'GROUP BY CAST(date_time AS DATE) '
             f'ORDER BY date_time ASC'
         )
@@ -72,15 +59,18 @@ def get_month_expenses_for_stats(user_id):
 
 
 def get_month_incomes_for_stats(user_id):
+    print('get_month_incomes_for_stats')
     with connection.cursor() as cursor:
         cursor.execute(
             f'SELECT SUM(amount), CAST(date_time AS DATE) AS Date_, date_time FROM incomes '
-            f'WHERE MONTH(date_time)=MONTH(CURDATE())'
-            f'AND YEAR(date_time)=YEAR(CURDATE()) AND user_id = {user_id}'
+            f'WHERE MONTH(date_time) = MONTH(CURDATE()) '
+            f'AND YEAR(date_time) = YEAR(CURDATE()) AND user_id = {user_id} '
             f'GROUP BY CAST(date_time AS DATE) '
             f'ORDER BY date_time ASC'
         )
         rows = cursor.fetchall()
+        print(rows)
+        # rows.sort(key=lambda x: x.count, reverse=True)
         return [i[0] for i in rows], [_get_formatted(j[1]) for j in rows]
 
 
@@ -100,14 +90,14 @@ def stats_for_current_week(user_id):
     print('stats_for_current_week')
     current_week_data_ = week_data_for_stats(user_id)
     return create_diagram_for_stats(current_week_data_[0], current_week_data_[2],
-                                    current_week_data_[1], current_week_data_[3], 'Week Expenses')
+                                    current_week_data_[1], current_week_data_[3], 'Week Statistic')
 
 
 def stats_for_current_month(user_id):
     print('stats_for_current_month')
     current_month_data_ = month_data_for_stats(user_id)
     return create_diagram_for_stats(current_month_data_[0], current_month_data_[2],
-                                    current_month_data_[1], current_month_data_[3], 'Month Expenses')
+                                    current_month_data_[1], current_month_data_[3], 'Month Statistic')
 
 
 def create_diagram_for_stats(values_expenses, values_incomes, dates_expenses, dates_incomes, type_):
@@ -129,10 +119,9 @@ def create_diagram_for_stats(values_expenses, values_incomes, dates_expenses, da
     ax.grid(color='b', alpha=0.5, linestyle='dashed', linewidth=0.5)
     ax.xaxis.set_minor_locator(AutoMinorLocator())
     fig.autofmt_xdate()
-    # plt.show()
-    k = list('abcdefghhijklmnopqrsruwxyz')
-    shuffle(k)
-    name_ = ''.join(i for i in k[:10])
+    alphabet_ = list('abcdefghhijklmnopqrsruwxyz')
+    shuffle(alphabet_)
+    name_ = ''.join(i for i in alphabet_[:10])
     plt.savefig(name_)
     return name_
 
@@ -153,60 +142,3 @@ def resulting_for_the_current_month(user_id):
     current_month_data_ = month_data_for_stats(user_id)
     return calculating_results(current_month_data_[0], current_month_data_[2])
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# print(get_week_incomes_for_stats())
-# stats_for_current_week()
-
-
-
-# def suka():
-#     return [_get_formatted(i) for i in numpy.array([datetime(2021, 12, 1) + timedelta(hours=i) for i in xrange(31)])]
-
-
-
-
-
-
-
-
-
-
-
-
-
-# # # # l = week_data_for_stats()[0]
-# # # # k = week_data_for_stats()[1]
-# # # y = np.array(l)
-# # # x = np.arange(len(k))
-# # # # x = np.linspace(0, 10, 50)
-# # # fig, ax = plt.subplots(figsize=(10, 4))
-# # # plt.title("Линейная зависимость y = x") # заголовок
-# # # plt.xlabel("Date") # ось абсцисс
-# # # plt.ylabel("Amount") # ось ординат
-# # # ax.xaxis.set_major_locator(DayLocator())
-# # #
-# # # plt.plot(x, y, 'o-')  # построение графика
-# # # ax.set_xticklabels(k, fontsize=10)
-# # # ax.grid(color='b', alpha=0.5, linestyle='dashed', linewidth=0.5)
-# # #
-# # # ax.xaxis.set_minor_locator(AutoMinorLocator())
-# # # fig.autofmt_xdate()
-# # #
-# # # plt.show()
-# from random import random, sample, shuffle
-#

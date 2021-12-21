@@ -6,16 +6,14 @@ def insert(table, column_values):
     values = [tuple(i for i in column_values.values())]
     placeholders = '%s' + ', %s' * (len(column_values) - 1)
     with connection.cursor() as cursor:
-        cursor.executemany(
-            f'INSERT INTO {table} ({columns}) VALUES ({placeholders})', values
-        )
+        cursor.executemany(f'INSERT INTO {table} ({columns}) VALUES ({placeholders})', values)
         connection.commit()
 
 
 def fetchall_(table, columns):
-    print(f'COLOMNS {columns}')
+    print(f'COLuMNS {columns}')
     columns_joined = ", ".join(columns)
-    print(f'COLOMNS {columns_joined}')
+    print(f'COLuMNS {columns_joined}')
     with connection.cursor() as cursor:
         cursor.execute(f"SELECT {columns_joined} FROM {table}")
         rows = cursor.fetchall()
@@ -27,7 +25,15 @@ def fetchall_(table, columns):
         result_.append(dict_row)
     return result_
 
-###################################################################################################################
+
+def fetchone_for_budget(table, columns, condition):
+    print(f'COLUMNS^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ {columns}')
+    columns_joined = ", ".join(columns)
+    print(f'COLUMNS^JOINED {columns_joined}')
+    with connection.cursor() as cursor:
+        cursor.execute(f"SELECT {columns_joined} FROM {table} WHERE {condition}")
+        z = cursor.fetchone()
+        return z[0]
 
 
 def delete(table, row, value):
@@ -36,12 +42,6 @@ def delete(table, row, value):
         connection.commit()
 
 
-# def delete_(table, row):
-#     with connection.cursor() as cursor:
-#         cursor.execute(f"DELETE FROM {table} WHERE {row}='{value}'")
-#         connection.commit()
-
-#######################################################################################################################
 def update_(table, data, condition):
     columns = ', '.join([f'{i} = %s' for i in data])
     values = [[i] for i in data.values()]

@@ -482,6 +482,8 @@ async def note_menu(call: types.CallbackQuery):
 @dp.callback_query_handler(text='🏛️Budget🏛️')
 async def note_menu(call: types.CallbackQuery):
     await call.message.delete()
+    print(Finances.get_budget_daily_limit(call.from_user.id))
+    print(Finances.get_budget_month_limit(call.from_user.id))
     await bot.send_message(
         call.from_user.id, f'<b>Your budget</b>:\n<b>Daily</b>: {Finances.get_budget_daily_limit(call.from_user.id)}\n'
                            f'<b>Month</b>: {Finances.get_budget_month_limit(call.from_user.id)}', parse_mode='HTML',
@@ -500,7 +502,7 @@ async def note_menu(call: types.CallbackQuery):
 async def note_menu(call: types.CallbackQuery):
     await call.message.delete()
     await bot.send_message(call.from_user.id, "*Choose action to perform*", parse_mode="Markdown",
-                           reply_markup=markup.inline_keyboard_see_expenses)
+                           reply_markup=markup.inline_keyboard_other_menu)
 
 
 @dp.callback_query_handler(text='➕Add category➕')
@@ -515,14 +517,10 @@ async def add_category(call: types.CallbackQuery):
     async def creating_finance_category(message: types.Message):
         try:
             Finances.create_category_finance(message['text'], message.from_user.id)
+            await asyncio.sleep(60)
         except exceptions.AddCategoryError as exp:
             await message.answer(str(exp))
             return
-        await asyncio.sleep(60)
-        return
-
-    await bot.send_message(call.from_user.id, '*Choose action to perform*', parse_mode='Markdown',
-                           reply_markup=markup.inline_keyboard_finance_menu)
 
 
 ########################################################################################################################
@@ -540,9 +538,9 @@ async def add_expense_(call: types.CallbackQuery):
             Finances.add_expense(message['text'], message.from_user.id)
         except exceptions.AddExpenseError as exp:
             await message.answer(str(exp))
-        await asyncio.sleep(20)
-        await bot.send_message(call.from_user.id, '*Choose action to perform*', parse_mode='Markdown',
-                               reply_markup=markup.inline_keyboard_finance_menu)
+        # await asyncio.sleep(20)
+        # await bot.send_message(call.from_user.id, '*Choose action to perform*', parse_mode='Markdown',
+        #                        reply_markup=markup.inline_keyboard_finance_menu)
 
 
 @dp.callback_query_handler(text='💰Add incomes💰')
@@ -553,7 +551,7 @@ async def add_incomes(call: types.CallbackQuery):
     async def adding_incomes(message: types.Message):
         try:
             Finances.add_incomes(message['text'], message.from_user.id)
-        except exceptions.AddIncomeError as exp:
+        except exceptions.AddIncomeError(str(message)) as exp:
             await message.answer(str(exp))
 
 
@@ -565,11 +563,11 @@ async def edit_budget(call: types.CallbackQuery):
     async def editing_budget(message: types.Message):
         try:
             Finances.edit_budget(message['text'], message.from_user.id)
-        except exceptions.AddIncomeError as exp:
+        except exceptions.ChangeBudgetError(str(message)) as exp:
             await message.answer(str(exp))
 
 
-@dp.message_handler(lambda message: message.text.startswith('/del_exp'))
+@dp.message_handler(lambda message: message.text.startswith('/delexp'))
 async def del_expense(message: types.Message):
     row_id = int(message.text[4:])
     Finances.delete_expense(row_id, message.from_user.id)
@@ -584,40 +582,53 @@ async def today_expenses_handler(call: types.CallbackQuery):
         await bot.send_message(call.from_user.id, 'Today expenses were not added', parse_mode='Markdown')
         return
     today_expenses_rows = [
-        f'{expense.amount} UAH on {expense.category_name} — /del_exp{expense.id}'
+        f'{expense.amount} UAH on {expense.category_name} — /delexp{expense.id}'
         for expense in today_expenses_
     ]
     await bot.send_message(call.from_user.id, "\n\n".join(today_expenses_rows), parse_mode='Markdown')
 
 
 @dp.callback_query_handler(text='WEEK_EXPENSES')
-async def today_expenses_handler(call: types.CallbackQuery):
+async def week_expenses_handler(call: types.CallbackQuery):
+    print('week_expenses_handler(call: types.CallbackQuery)')
     this_week_expenses_ = Finances.this_week_expenses(call.from_user.id)
+    print(this_week_expenses_)
     if not this_week_expenses_:
         await bot.send_message(call.from_user.id, 'This week were not added', parse_mode='Markdown')
         return
     this_week_expenses_rows = [
-        f'{expense.amount} UAH on {expense.category_name} — /del_exp{expense.id}'
-        for expense in this_week_expenses_
+        f'{expense.amount} UAH on {expense.category_name} — /delexp{expense.id}' for expense in this_week_expenses_
     ]
     await bot.send_message(call.from_user.id, "\n\n".join(this_week_expenses_rows), parse_mode='Markdown')
 
 
+@dp.callback_query_handler(text='SEE_CATEGORIES')
+async def categories_viewing_handler(call: types.CallbackQuery):
+    print('categories_viewing_handler')
+    categories_data = Finances.see_categories(call.from_user.id)
+    if not categories_data:
+        await bot.send_message(call.from_user.id, 'You haven`t any category yet', parse_mode='Markdown')
+        return
+    categories_ = [f'<b>{category.name_}:</b>    {category.category_text}' for category in categories_data]
+    print("\n".join(categories_))
+    await bot.send_message(call.from_user.id, '<b>Your Categories:</b>\n\n' + '\n'.join(categories_), parse_mode='HTML')
+
+
 @dp.callback_query_handler(text='MONTH_EXPENSES')
-async def today_expenses_handler(call: types.CallbackQuery):
+async def month_expenses_handler(call: types.CallbackQuery):
     this_month_expenses_ = Finances.this_month_expenses(call.from_user.id)
     if not this_month_expenses_:
         await bot.send_message(call.from_user.id, 'Today expenses were not added', parse_mode='Markdown')
         return
     this_month_expenses_rows = [
-        f'{expense.amount} UAH on {expense.category_name} — /del_exp{expense.id}'
+        f'{expense.amount} UAH on {expense.category_name} — /delexp{expense.id}'
         for expense in this_month_expenses_
     ]
     await bot.send_message(call.from_user.id, "\n\n".join(this_month_expenses_rows), parse_mode='Markdown')
 
 
 @dp.callback_query_handler(text='TODAY_INCOMES')
-async def today_expenses_handler(call: types.CallbackQuery):
+async def today_incomes_handler(call: types.CallbackQuery):
     today_expenses_ = Finances.today_incomes(call.from_user.id)
     if not today_expenses_:
         await bot.send_message(call.from_user.id, 'Today expenses were not added', parse_mode='Markdown')
@@ -630,7 +641,7 @@ async def today_expenses_handler(call: types.CallbackQuery):
 
 
 @dp.callback_query_handler(text='WEEK_INCOMES')
-async def today_expenses_handler(call: types.CallbackQuery):
+async def week_incomes_handler(call: types.CallbackQuery):
     this_week_expenses_ = Finances.this_week_incomes(call.from_user.id)
     if not this_week_expenses_:
         await bot.send_message(call.from_user.id, 'This week were not added', parse_mode='Markdown')
@@ -643,7 +654,7 @@ async def today_expenses_handler(call: types.CallbackQuery):
 
 
 @dp.callback_query_handler(text='MONTH_INCOMES')
-async def today_expenses_handler(call: types.CallbackQuery):
+async def month_incomes_handler(call: types.CallbackQuery):
     this_month_expenses_ = Finances.this_month_incomes(call.from_user.id)
     if not this_month_expenses_:
         await bot.send_message(call.from_user.id, 'Today expenses were not added', parse_mode='Markdown')
@@ -663,7 +674,8 @@ async def this_week_statistic_handler(call: types.CallbackQuery):
     result_ = Statistic.resulting_for_the_current_week(call.from_user.id)
     await bot.send_photo(
         call.from_user.id, open(f'{file_name_}.png', 'rb'),
-        caption=f'Total expenses: {result_[0]}\nTotal incomes: {result_[1]}\nPure profit: {result_[2]}'
+        caption=f'<b>Total expenses:</b> {result_[0]}\n<b>Total incomes:</b> {result_[1]}\n'
+                f'<b>Pure profit:</b> {result_[2]}', parse_mode='HTML'
     )
     await asyncio.sleep(10)
     Statistic.delete_stats_image(file_name_)
