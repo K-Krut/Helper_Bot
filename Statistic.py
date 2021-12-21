@@ -7,7 +7,7 @@ from matplotlib.ticker import AutoMinorLocator
 from random import shuffle
 from imports import connection
 
-#
+
 # class ExpensesData:
 #     values: int
 #     dates: str
