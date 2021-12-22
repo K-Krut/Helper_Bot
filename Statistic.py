@@ -112,6 +112,8 @@ def create_diagram_for_stats(values_expenses, values_incomes, dates_expenses, da
     plt.plot(x, y, 'o-', label='expenses')
     plt.plot(x2, y2, 'o-', label='incomes')
     plt.legend(loc="upper left")
+    print(dates_expenses)
+    print(merging_list(dates_expenses, dates_incomes))
     ax.set_xticklabels(merging_list(dates_expenses, dates_incomes), fontsize=10)
     ax.grid(color='b', alpha=0.5, linestyle='dashed', linewidth=0.5)
     ax.xaxis.set_minor_locator(AutoMinorLocator())
