@@ -1,4 +1,4 @@
-import pytz
+from typing import NamedTuple, List, Optional
 
 from imports import *
 from exceptions import *
@@ -10,9 +10,10 @@ class Categories:
         self._categories = self._load_categories()
 
     def _load_categories(self):
-        categories = db.fetchall_("category", "code_name category_name aliases_".split())
-        categories = self._fill_aliases(categories)
-        return categories
+        return self._fill_aliases(db.fetchall_("category", "code_name category_name aliases_".split()))
+        # categories = db.fetchall_("category", "code_name category_name aliases_".split())
+        # categories = self._fill_aliases(categories)
+        # return categories
 
     def _fill_aliases(self, categories):
         categories_result = []
@@ -26,6 +27,7 @@ class Categories:
             )
         return categories_result
 
+    @property
     def get_all_categories(self):
         return self._categories
 

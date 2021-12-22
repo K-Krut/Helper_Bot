@@ -1,4 +1,4 @@
-from imports import *
+from imports import connection
 
 
 def insert(table, column_values):

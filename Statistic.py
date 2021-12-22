@@ -87,14 +87,12 @@ def month_data_for_stats(user_id):
 
 
 def stats_for_current_week(user_id):
-    print('stats_for_current_week')
     current_week_data_ = week_data_for_stats(user_id)
     return create_diagram_for_stats(current_week_data_[0], current_week_data_[2],
                                     current_week_data_[1], current_week_data_[3], 'Week Statistic')
 
 
 def stats_for_current_month(user_id):
-    print('stats_for_current_month')
     current_month_data_ = month_data_for_stats(user_id)
     return create_diagram_for_stats(current_month_data_[0], current_month_data_[2],
                                     current_month_data_[1], current_month_data_[3], 'Month Statistic')
@@ -111,10 +109,9 @@ def create_diagram_for_stats(values_expenses, values_incomes, dates_expenses, da
     plt.xlabel("Date")
     plt.ylabel("Amount")
     ax.xaxis.set_major_locator(DayLocator())
-    plt.plot(x, y, 'o-')
-    plt.plot(x2, y2, 'o-')
-    print(dates_expenses)
-    print(merging_list(dates_expenses, dates_incomes))
+    plt.plot(x, y, 'o-', label='expenses')
+    plt.plot(x2, y2, 'o-', label='incomes')
+    plt.legend(loc="upper left")
     ax.set_xticklabels(merging_list(dates_expenses, dates_incomes), fontsize=10)
     ax.grid(color='b', alpha=0.5, linestyle='dashed', linewidth=0.5)
     ax.xaxis.set_minor_locator(AutoMinorLocator())
