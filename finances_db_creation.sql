@@ -51,5 +51,3 @@ CREATE TABLE incomes (
     FOREIGN KEY (category) REFERENCES category(code_name)
 );
 
-
-INSERT INTO budget (code_name, daily_limit, month_limit) VALUES ('general', 0, 0)
