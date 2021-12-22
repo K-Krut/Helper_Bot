@@ -1,4 +1,4 @@
-from imports import connection
+from config import connection
 
 
 def insert(table, column_values):
@@ -35,6 +35,7 @@ def fetchone_for_budget(table, columns, condition):
     with connection.cursor() as cursor:
         cursor.execute(f"SELECT {columns_joined} FROM {table} WHERE {condition}")
         z = cursor.fetchone()
+        print(z)
         return z[0]
 
 

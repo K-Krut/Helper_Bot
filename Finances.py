@@ -1,4 +1,5 @@
 from typing import NamedTuple, List, Optional
+from config import connection
 
 from imports import *
 from exceptions import *

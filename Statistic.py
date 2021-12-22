@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 from matplotlib.dates import DayLocator
 from matplotlib.ticker import AutoMinorLocator
 from random import shuffle
-from imports import connection
+from config import connection
 
 
 def _get_formatted(date):
