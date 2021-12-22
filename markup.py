@@ -94,6 +94,8 @@ inline_button_see_today_incomes = InlineKeyboardButton('Today Incomes', callback
 inline_button_see_week_incomes = InlineKeyboardButton('This week Incomes', callback_data='WEEK_INCOMES')
 inline_button_see_month_incomes = InlineKeyboardButton('This month Incomes', callback_data='MONTH_INCOMES')
 
+
+inline_button_back_to_other_finance = InlineKeyboardButton('🔙', callback_data='BACK_TO_OTHER_FINANCE')
 inline_button_see_categories = InlineKeyboardButton('My categories', callback_data='SEE_CATEGORIES')
 
 
@@ -101,6 +103,5 @@ inline_keyboard_other_menu = InlineKeyboardMarkup(row_width=2).add(
     inline_button_see_today_expenses, inline_button_see_today_incomes,
     inline_button_see_week_expenses, inline_button_see_week_incomes,
     inline_button_see_month_expenses, inline_button_see_month_incomes,
-    inline_button_see_categories,
-    inline_button_back_to_finance
+    inline_button_see_categories, inline_button_back_to_other_finance
 )
