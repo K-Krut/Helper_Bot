@@ -32,17 +32,17 @@ class Categories:
         return self._categories
 
     def get_category(self, category_name):
-        finded = None
-        other_category = None
+        category_finded = None
+        others = None
         for category in self._categories:
             if category.codename == "other_":
-                other_category = category
+                others = category
             for alias in category.aliases:
                 if category_name in alias:
-                    finded = category
-        if not finded:
-            finded = other_category
-        return finded
+                    category_finded = category
+        if not category_finded:
+            category_finded = others
+        return category_finded
 
 
 class CreateCategory(NamedTuple):
@@ -201,6 +201,7 @@ def see_categories(user_id):
         cursor.execute(f'SELECT category_name, aliases_ FROM category WHERE user_id = {str(user_id)}')
         rows = cursor.fetchall()
     return [CategoryMessage(name_=row[0], category_text=row[1]) for row in rows]
+
 
 def delete_expense(row_id, user_id):
     with connection.cursor() as cursor:
