@@ -40,3 +40,13 @@ class ChangeBudgetError(Exception):
                f'`daily 150 month 8500`\n' \
                f'daily 360\n' \
                f'month 4520'
+
+
+class DeleteError(Exception):
+    def __init__(self, delete, error_message='Deleting error'):
+        self._delete = delete
+        self._error_message = error_message
+        super().__init__(self._error_message)
+
+    def __str__(self):
+        return f'{self._error_message}:\n{self._delete}\n'

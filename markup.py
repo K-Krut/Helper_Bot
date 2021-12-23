@@ -75,7 +75,6 @@ inline_button_statistic_by_week = InlineKeyboardButton('This week', callback_dat
 inline_button_statistic_by_month = InlineKeyboardButton('This month', callback_data='MONTH_STATISTIC')
 
 inline_keyboard_statistic_menu = InlineKeyboardMarkup(row_width=2).add(
-    # inline_button_statistic_today,
     inline_button_statistic_by_week, inline_button_statistic_by_month,
     inline_button_back_to_finance
 )
@@ -103,5 +102,5 @@ inline_keyboard_other_menu = InlineKeyboardMarkup(row_width=2).add(
     inline_button_see_today_expenses, inline_button_see_today_incomes,
     inline_button_see_week_expenses, inline_button_see_week_incomes,
     inline_button_see_month_expenses, inline_button_see_month_incomes,
-    inline_button_see_categories, inline_button_back_to_other_finance
+    inline_button_see_categories, inline_button_back_to_finance
 )

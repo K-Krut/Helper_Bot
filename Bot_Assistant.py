@@ -11,36 +11,13 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters.state import State, StatesGroup
 import asyncio
 
-logging.basicConfig(level=logging.INFO)
-bot = Bot(token=config.TOKEN)
-dp = Dispatcher(bot, storage=MemoryStorage())
-
-list_of_themes = []
-
-
-class NoteSearch(StatesGroup):
-    SearchNote = State()
-
-
-class NoteSearchByTitle(StatesGroup):
-    SearchByTitle = State()
-
-
-class NoteEdit(StatesGroup):
-    DeleteNote = State()
-    DeleteTopic = State()
-
-
-class EditNote(StatesGroup):
-    SearchThemes = State()
-    SearchTitle = State()
-    EnterText = State()
-
-
-class Note(StatesGroup):
-    AddTheme = State()
-    AddName = State()
-    AddText = State()
+connection = pymysql.connect(
+    host="localhost",
+    port=3306,
+    user="root",
+    password="Varta4899",
+    db='finance'
+)
 
 
 class HandlerIncomes(StatesGroup):
@@ -80,26 +57,27 @@ async def send_welcome_message(message: types.Message):
         reply_markup=markup.inline_keyboard_menu
     )
 
-
-@dp.callback_query_handler(text="📝Notes📝")
-async def note_menu(call: types.CallbackQuery):
-    await call.message.delete()
-    await bot.send_message(call.from_user.id, "<b>Choose action to perform</b>", parse_mode="HTML",
-                           reply_markup=markup.inline_keyboard_note_menu)
-
-
-@dp.callback_query_handler(text="📅Schedule📅")
-async def schedule_menu(call: types.CallbackQuery):
-    await call.message.delete()
-    await bot.send_message(call.from_user.id, "<b>Choose action to perform</b>", parse_mode="HTML",
-                           reply_markup=markup.inline_keyboard_schedule_menu)
-
-
-@dp.callback_query_handler(text="🔧Settings🔧")
-async def schedule_settings(call: types.CallbackQuery):
-    await call.message.delete()
-    await bot.send_message(call.from_user.id, f"<b>Current settings</b>:\nGroup: \nNotification: ", parse_mode="HTML",
-                           reply_markup=markup.inline_keyboard_schedule_settings)
+#
+# @dp.callback_query_handler(text="📝Notes📝")
+# async def note_menu(call: types.CallbackQuery):
+#     await call.message.delete()
+#     await bot.send_message(call.from_user.id, "<b>Choose action to perform</b>", parse_mode="HTML",
+#                            reply_markup=markup.inline_keyboard_note_menu)
+#
+#
+# @dp.callback_query_handler(text="📅Schedule📅")
+# async def schedule_menu(call: types.CallbackQuery):
+#     await call.message.delete()
+#     await bot.send_message(call.from_user.id, "<b>Choose action to perform</b>", parse_mode="HTML",
+#                            reply_markup=markup.inline_keyboard_schedule_menu)
+#
+#
+# @dp.callback_query_handler(text="🔧Settings🔧")
+# async def schedule_settings(call: types.CallbackQuery):
+#     await call.message.delete()
+#     await bot.send_message(call.from_user.id, f"<b>Current settings</b>:\nGroup: \nNotification: ", parse_mode="HTML",
+#                            reply_markup=markup.inline_keyboard_schedule_settings)
+#
 
 
 @dp.callback_query_handler(text="🔙")
@@ -212,21 +190,29 @@ async def add_category(call: types.CallbackQuery):
     async def creating_finance_category(message: types.Message):
         try:
             Finances.create_category_finance(message['text'], message.from_user.id)
-            await asyncio.sleep(60)
         except exceptions.AddCategoryError as exp:
             await message.answer(str(exp))
-            return
+            await HandlerCategory.next()
+        await bot.send_message(message.from_user.id, 'Edited', parse_mode='HTML')
         await HandlerCategory.next()
 
 
 @dp.message_handler(lambda message: message.text.startswith('/delexp'))
 async def del_expense(message: types.Message):
-    Finances.delete_expense(int(message.text[7:]), message.from_user.id)
+    try:
+        Finances.delete_expense(int(message.text[7:]), message.from_user.id)
+    except exceptions.DeleteError(str(message)) as exp:
+        await bot.send_message(message.from_user.id, f'{exp}', parse_mode='HTML')
+    await bot.send_message(message.from_user.id, 'Deleted', parse_mode='HTML')
 
 
 @dp.message_handler(lambda message: message.text.startswith('/delinc'))
 async def del_expense(message: types.Message):
-    Finances.delete_expense(int(message.text[7:]), message.from_user.id)
+    try:
+        Finances.delete_expense(int(message.text[7:]), message.from_user.id)
+    except exceptions.DeleteError(str(message)) as exp:
+        await bot.send_message(message.from_user.id, f'{exp}', parse_mode='HTML')
+    await bot.send_message(message.from_user.id, 'Deleted', parse_mode='HTML')
 
 
 @dp.callback_query_handler(text='SEE_CATEGORIES')
