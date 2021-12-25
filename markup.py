@@ -152,3 +152,5 @@ inline_keyboard_other_menu = InlineKeyboardMarkup(row_width=2).add(
     inline_button_see_month_expenses, inline_button_see_month_incomes,
     inline_button_see_categories, inline_button_back_to_finance
 )
+
+

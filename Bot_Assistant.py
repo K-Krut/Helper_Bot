@@ -1,5 +1,9 @@
+from aiogram.dispatcher import FSMContext
+from aiogram.types import InlineKeyboardMarkup
+
 import Finances
 import Statistic
+import bd
 import exceptions
 from imports import *
 import config
@@ -7,10 +11,11 @@ import logging
 from datetime import datetime, timedelta as tmd
 from config import connection
 from aiogram import Bot, Dispatcher, executor, types
-import markup
+
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters.state import State, StatesGroup
 import asyncio
+import markup
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=config.TOKEN)
@@ -183,7 +188,8 @@ async def add_note(call: types.CallbackQuery):
         else:
 
             with connection.cursor() as curs:
-                adding_name = f"""INSERT INTO notatics(themes_id, title) VALUES({selected_theme_id}, "{message.text}")"""
+                adding_name = f"""INSERT INTO notatics(themes_id, title) 
+                VALUES({selected_theme_id}, "{message.text}")"""
                 curs.execute(adding_name)
                 connection.commit()
                 search_note = f"""SELECT id FROM notatics WHERE themes_id = {selected_theme_id} """ \
@@ -263,7 +269,10 @@ async def send_themes(call: types.CallbackQuery):
     async def delete_topic(message: types.Message):
         if message.text in topic_names_list:
             with connection.cursor() as curs:
-                note_delete = f"""DELETE FROM notatics WHERE themes_id={theme_id} AND title = '{message.text}';"""
+                note_delete = f"""DELETE 
+                                  FROM notatics 
+                                  WHERE themes_id={theme_id} 
+                                  AND title = '{message.text}';"""
                 curs.execute(note_delete)
                 connection.commit()
             mes = await bot.send_message(message.from_user.id, f"<b>✅Note was successfully deleted✅</b>",
@@ -467,10 +476,13 @@ async def edit_note(call: types.CallbackQuery):
     async def edit_text(message: types.Message):
         with connection.cursor() as curs:
             curs.execute(f"""UPDATE notatics 
-            SET text_notatics = '{message.text}' WHERE themes_id={theme_id} AND title = '{title_this}';""")
+                             SET text_notatics = '{message.text}' 
+                             WHERE themes_id={theme_id} 
+                             AND title = '{title_this}';""")
+            connection.commit()
             this_note = await bot.send_message(message.from_user.id, "<b>✅NOTE SUCCESSFULLY EDITED✅</b>",
                                                parse_mode="HTML")
-            connection.commit()
+
             await asyncio.sleep(3)
             await EditNote.next()
             await this_note.edit_text(
@@ -1212,6 +1224,7 @@ async def add_expense_(call: types.CallbackQuery):
             Finances.add_expense(message['text'], message.from_user.id)
         except exceptions.AddExpenseError as exp:
             await message.answer(str(exp))
+        await bot.send_message(message.from_user.id, 'ADDED', parse_mode='HTML')
         await HandlerExpenses.next()
 
 
@@ -1227,6 +1240,7 @@ async def add_incomes(call: types.CallbackQuery):
             Finances.add_incomes(message['text'], message.from_user.id)
         except exceptions.AddIncomeError(str(message)) as exp:
             await message.answer(str(exp))
+        await bot.send_message(message.from_user.id, 'ADDED', parse_mode='HTML')
         await HandlerIncomes.next()
 
 
@@ -1261,17 +1275,26 @@ async def add_category(call: types.CallbackQuery):
         except exceptions.AddCategoryError as exp:
             await message.answer(str(exp))
             return
+        await bot.send_message(message.from_user.id, 'Edited', parse_mode='HTML')
         await HandlerCategory.next()
 
 
 @dp.message_handler(lambda message: message.text.startswith('/delexp'))
 async def del_expense(message: types.Message):
-    Finances.delete_expense(int(message.text[7:]), message.from_user.id)
+    try:
+        Finances.delete_expense(int(message.text[7:]), message.from_user.id)
+    except exceptions.DeleteError(str(message)) as exp:
+        await bot.send_message(message.from_user.id, f'{exp}', parse_mode='HTML')
+    await bot.send_message(message.from_user.id, 'Deleted')
 
 
 @dp.message_handler(lambda message: message.text.startswith('/delinc'))
 async def del_expense(message: types.Message):
-    Finances.delete_expense(int(message.text[7:]), message.from_user.id)
+    try:
+        Finances.delete_expense(int(message.text[7:]), message.from_user.id)
+    except exceptions.DeleteError(str(message)) as exp:
+        await bot.send_message(message.from_user.id, f'{exp}', parse_mode='HTML')
+    await bot.send_message(message.from_user.id, 'Deleted')
 
 
 @dp.callback_query_handler(text='SEE_CATEGORIES')
@@ -1425,6 +1448,91 @@ async def back(call: types.CallbackQuery):
         reply_markup=markup.inline_keyboard_other_menu
     )
 
+
+lib = types.InlineKeyboardMarkup(row_width=1)
+add = types.InlineKeyboardButton(text="Add book to list", callback_data="add")
+stats = types.InlineKeyboardButton(text="View your top", callback_data="stats")
+full = types.InlineKeyboardButton(text="View full list", callback_data="full")
+lib.add(add, stats, full, markup.inline_button_back)
+
+
+class FSMBook(StatesGroup):
+    write_search = State()
+    write_delete = State()
+
+
+@dp.message_handler(content_types=['text', 'document', 'audio', 'photo', 'sticker', 'video', 'voice', 'unknown'],
+                    state=FSMBook.write_search)
+async def search(message: types.Message, state: FSMContext):
+    if message.text:
+        info = bd.get_info(message.text)
+        await state.finish()
+        if info:
+            if bd.add_book(info, message.from_user.id):
+                await bot.send_message(message.chat.id, "Книга-" + info[0]['Название'] + '\nЗа авторством-' + info[0][
+                    'Автор'] + '\nОт издания-' + info[0]['Издательство'] + '\nБыла добавлена в ваш список')
+            else:
+                await bot.send_message(message.chat.id, "Это произведение уже есть у вас ,или поиск выдал не книгу")
+        else:
+            await bot.send_message(message.chat.id, "Я не смог найти книгу по даному запросу")
+    else:
+        await bot.send_message(message.chat.id, "Введите пожалуйста текст")
+        await message.delete()
+
+
+@dp.message_handler(content_types=['text', 'document', 'audio', 'photo', 'sticker', 'video', 'voice', 'unknown'],
+                    state=FSMBook.write_delete)
+async def deletess(message: types.Message, state: FSMContext):
+    if message.text and not any((numb not in '1234567890') for numb in message.text):
+        await state.finish()
+        if bd.delete_book(int(message.text), message.from_user.id):
+            await bot.send_message(message.chat.id, "Книга удалена")
+        else:
+            await bot.send_message(message.chat.id, "Я не смог найти книгу по даному запросу")
+    else:
+        await bot.send_message(message.chat.id, "Введите пожалуйста код")
+        await message.delete()
+
+
+@dp.callback_query_handler(text="📚Library📚")
+async def library(call: types.CallbackQuery):
+    await call.message.delete()
+    await bot.send_message(call.message.chat.id, "Выбирайте,что именно вы хотите сделать с книжным списком желаний:",
+                           reply_markup=lib)
+
+
+@dp.callback_query_handler(text="add")
+async def add_(call: types.CallbackQuery):
+    await call.message.delete()
+    await bot.send_message(call.message.chat.id, "Напишите запрос,по которому я буду искать книгу:")
+    await FSMBook.write_search.set()
+
+
+@dp.callback_query_handler(text="full")
+async def full_(call: types.CallbackQuery):
+    await call.message.delete()
+    delete = types.InlineKeyboardButton(text="Удалить книгу со списка", callback_data="delete")
+    await bot.send_message(call.message.chat.id, "Список ваших интересов:\n" + bd.get_list(
+        call.from_user.id) + '\nВведи код книги ,если хочешь убрать её',
+                           reply_markup=InlineKeyboardMarkup(row_width=1).add(delete))
+
+
+@dp.callback_query_handler(text="delete")
+async def delete_(call: types.CallbackQuery):
+
+    await bot.send_message(call.message.chat.id, "Введи код книги для удаления:")
+    await FSMBook.write_delete.set()
+
+
+@dp.callback_query_handler(text="stats")
+async def stats_(call: types.CallbackQuery):
+    await call.message.delete()
+    data = bd.get_max_info(call.from_user.id)
+    await bot.send_message(call.message.chat.id, "Информация:\n" + '<><><><><><><><>\n'.join(
+        '\n'.join(str(item) for item in group) for group in data.items()))
+
+
+executor.start_polling(dp, skip_updates=True)
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
