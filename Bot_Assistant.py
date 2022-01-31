@@ -16,6 +16,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters.state import State, StatesGroup
 import asyncio
 import markup
+import re
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=config.TOKEN)
@@ -107,6 +108,7 @@ async def send_welcome_message(message: types.Message):
     await message.delete()
     print(Finances.check_user_exists(str(message.from_user.id)))
     if not Finances.check_user_exists(str(message.from_user.id)):
+        print("aboba")
         Finances.add_user(message['from'])
         Finances.set_default_budget(str(message.from_user.id))
     await bot.send_message(
@@ -798,7 +800,7 @@ async def subject_name(call: types.CallbackQuery):
         global selected_subject
         selected_subject = message.text
         await AddPair.next()
-        note = await bot.send_message(call.from_user.id, f"<b>✅YOU SELECT SUBJECT✅</b>",
+        note = await bot.send_message(message.from_user.id, f"<b>✅YOU SELECT SUBJECT✅</b>",
                                       parse_mode="HTML")
         await asyncio.sleep(3)
         await note.edit_text("<b>ADD PAIR INFO</b>",
@@ -818,7 +820,7 @@ async def audience(call: types.CallbackQuery):
         selected_audience = message.text
         await AddAudiences.next()
 
-        note = await bot.send_message(call.from_user.id, f"<b>✅YOU SELECT AUDIENCE✅</b>",
+        note = await bot.send_message(message.from_user.id, f"<b>✅YOU SELECT AUDIENCE✅</b>",
                                       parse_mode="HTML")
         await asyncio.sleep(3)
         await note.edit_text("<b>ADD PAIR INFO</b>",
@@ -831,15 +833,17 @@ async def teacher(call: types.CallbackQuery):
     await call.message.delete()
     await bot.send_message(call.from_user.id, "<b>🖊Enter teacher🖊</b>", parse_mode="HTML")
     await AddTeachers.AddTeacher.set()
+    print(f"first --> {call.from_user.id}")
 
     @dp.message_handler(state=AddTeachers.AddTeacher)
     async def add_audience(message: types.Message):
         global selected_teacher
         selected_teacher = message.text
         await AddTeachers.next()
-
-        note = await bot.send_message(call.from_user.id, f"<b>✅YOU SELECT TEACHER✅</b>",
+        print(f"second --> {message.from_user.id}")
+        note = await bot.send_message(message.from_user.id, f"<b>✅YOU SELECT TEACHER✅</b>",
                                       parse_mode="HTML")
+
         await asyncio.sleep(3)
         await note.edit_text("<b>ADD PAIR INFO</b>",
                              reply_markup=markup.inline_keyboard_add_pair,
@@ -1519,7 +1523,6 @@ async def full_(call: types.CallbackQuery):
 
 @dp.callback_query_handler(text="delete")
 async def delete_(call: types.CallbackQuery):
-
     await bot.send_message(call.message.chat.id, "Введи код книги для удаления:")
     await FSMBook.write_delete.set()
 
