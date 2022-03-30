@@ -1,5 +1,4 @@
 import os
-
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.dates import DayLocator
@@ -59,7 +58,6 @@ def get_month_expenses_for_stats(user_id):
 
 
 def get_month_incomes_for_stats(user_id):
-    print('get_month_incomes_for_stats')
     with connection.cursor() as cursor:
         cursor.execute(
             f'SELECT SUM(amount), CAST(date_time AS DATE) AS Date_, date_time FROM incomes '
@@ -99,7 +97,6 @@ def stats_for_current_month(user_id):
 
 
 def create_diagram_for_stats(values_expenses, values_incomes, dates_expenses, dates_incomes, type_):
-    print('create_diagram_for_stats')
     x = np.arange(len(dates_expenses))
     y = np.array(values_expenses)
     y2 = np.array(values_incomes)
@@ -140,4 +137,3 @@ def resulting_for_the_current_week(user_id):
 def resulting_for_the_current_month(user_id):
     current_month_data_ = month_data_for_stats(user_id)
     return calculating_results(current_month_data_[0], current_month_data_[2])
-
