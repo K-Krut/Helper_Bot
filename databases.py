@@ -5,7 +5,6 @@ def insert(table, column_values):
     print(column_values)
     columns = ', '.join(column_values.keys())
     values = [tuple(i for i in column_values.values())]
-    print(f'VALUES {values} COL {column_values}')
     placeholders = '%s' + ', %s' * (len(column_values) - 1)
     with connection.cursor() as cursor:
         cursor.executemany(f'INSERT INTO {table} ({columns}) VALUES ({placeholders})', values)
@@ -13,9 +12,7 @@ def insert(table, column_values):
 
 
 def fetchall_(table, columns):
-    print(f'COLuMNS {columns}')
     columns_joined = ", ".join(columns)
-    print(f'COLuMNS {columns_joined}')
     with connection.cursor() as cursor:
         cursor.execute(f"SELECT {columns_joined} FROM {table}")
         rows = cursor.fetchall()
@@ -29,14 +26,10 @@ def fetchall_(table, columns):
 
 
 def fetchone_for_budget(table, columns, condition):
-    print(f'COLUMNS^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ {columns}')
     columns_joined = ", ".join(columns)
-    print(f'COLUMNS^JOINED {columns_joined}')
     with connection.cursor() as cursor:
         cursor.execute(f"SELECT {columns_joined} FROM {table} WHERE {condition}")
-        z = cursor.fetchone()
-        print(z)
-        return z[0]
+        return cursor.fetchone()[0]
 
 
 def delete(table, row, value):
